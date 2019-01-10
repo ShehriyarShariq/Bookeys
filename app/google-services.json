@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "405169583605",
+    "firebase_url": "https://bookeys-49faf.firebaseio.com",
+    "project_id": "bookeys-49faf",
+    "storage_bucket": "bookeys-49faf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405169583605:android:53d086c38d0298ed",
+        "android_client_info": {
+          "package_name": "com.studio.millionares.barberbooker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "405169583605-b9tj7osutgqjdessqpq09gj2ljnf9bfa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.studio.millionares.barberbooker",
+            "certificate_hash": "d19eb7196661ff340ce0669b57124cea542d2d99"
+          }
+        },
+        {
+          "client_id": "405169583605-66vm21cvk1roesctehdpltuapj4ml3f2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBReC5PawEPtnoxF5rVBfcuotDUVi77spc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "405169583605-66vm21cvk1roesctehdpltuapj4ml3f2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
