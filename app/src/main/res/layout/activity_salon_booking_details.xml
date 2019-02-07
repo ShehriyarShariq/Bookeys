@@ -1,0 +1,900 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SalonBookingDetailsActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/header_layout"
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+            <ProgressBar
+                android:id="@+id/images_loader_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" />
+
+            <ImageView
+                android:id="@+id/salon_profile_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/salon_front"
+                android:visibility="visible" />
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.5"
+                    android:background="#a7a7a7">
+
+                    <TextView
+                        android:id="@+id/saloon_name_placeholder_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="67dp"
+                        android:layout_marginBottom="5dp"
+                        android:backgroundTint="#fff"
+                        android:textColor="#fff"
+                        android:textSize="20sp"
+                        android:visibility="invisible"
+                        tools:text="Saloon Name" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/saloon_name_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_toLeftOf="@+id/rating_txt"
+                    android:backgroundTint="#fff"
+                    android:text="Saloon Name"
+                    android:textColor="#000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/rating_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="2dp"
+                    android:layout_toLeftOf="@+id/ic_star"
+                    android:textColor="#000"
+                    android:textSize="18sp"
+                    tools:text="4.5" />
+
+                <ImageView
+                    android:id="@+id/ic_star"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="5dp"
+                    android:src="@drawable/ic_star" />
+
+            </RelativeLayout>
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null" />
+
+            <RelativeLayout
+                android:id="@+id/get_directions_btn_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/add_remove_fav_layout">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:cardBackgroundColor="#a42d4e"
+                    app:cardCornerRadius="25dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginBottom="2dp">
+
+                        <ImageView
+                            android:id="@+id/get_directions_btn"
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="2dp"
+                            android:background="#00FFFFFF"
+                            android:src="@drawable/ic_direction" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/get_directions_btn"
+                            android:layout_centerHorizontal="true"
+                            android:text="GO"
+                            android:textColor="#fff"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                    </RelativeLayout>
+
+                </android.support.v7.widget.CardView>
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/add_remove_fav_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_margin="10dp">
+
+                <ImageButton
+                    android:id="@+id/add_to_favourites_btn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/ic_make_fav" />
+
+                <ImageButton
+                    android:id="@+id/remove_from_favourites_btn"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_centerInParent="true"
+                    android:background="#00FFFFFF"
+                    android:src="@drawable/ic_fav"
+                    android:visibility="gone" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/body_layout"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/header_layout"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="5dp">
+
+            <RelativeLayout
+                android:id="@+id/original_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible">
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/tab_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp" />
+
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/fragments_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_above="@+id/make_booking_btn"
+                    android:layout_below="@+id/tab_layout"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp" />
+
+                <android.support.v7.widget.CardView
+                    android:id="@+id/make_booking_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_alignParentBottom="true"
+                    app:cardBackgroundColor="#a42d4e"
+                    app:cardCornerRadius="2dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="sans-serif-smallcaps"
+                        android:gravity="center"
+                        android:text="Book Now!"
+                        android:textAlignment="center"
+                        android:textColor="#fff"
+                        android:textSize="20sp" />
+
+                </android.support.v7.widget.CardView>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/booking_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <RelativeLayout
+                    android:id="@+id/service_selection_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@+id/cancel_next_btn_layout"
+                    android:layout_margin="5dp"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/instruction_txt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Select from the services provided below"
+                        android:textSize="17sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_below="@+id/instruction_txt"
+                        android:layout_margin="2dp"
+                        android:background="#000" />
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/booking_services_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/instruction_txt"
+                        android:layout_margin="5dp"></android.support.v7.widget.RecyclerView>
+
+                </RelativeLayout>
+
+                <ScrollView
+                    android:id="@+id/time_selection_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@+id/cancel_next_btn_layout"
+                    android:layout_margin="5dp"
+                    android:visibility="gone">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/heading_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_toRightOf="@+id/back_btn"
+                            android:text="Time Selection"
+                            android:textSize="25sp" />
+
+                        <ImageView
+                            android:id="@+id/back_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_margin="10dp"
+                            android:src="@drawable/ic_back" />
+
+                        <TextView
+                            android:id="@+id/instructions_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/heading_label"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:text="Pick a start time that lies within the available time slots."
+                            android:textSize="16sp" />
+
+                        <RelativeLayout
+                            android:id="@+id/date_time_selector_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/instructions_txt"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp">
+
+                            <RelativeLayout
+                                android:id="@+id/date_picker"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <ImageView
+                                    android:id="@+id/date_icon"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:src="@drawable/ic_date" />
+
+                                <android.support.v7.widget.CardView
+                                    android:id="@+id/date_picker_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_toRightOf="@+id/date_icon"
+                                    app:cardBackgroundColor="#c7c7c7"
+                                    app:cardCornerRadius="5dp">
+
+                                    <TextView
+                                        android:id="@+id/selected_date"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_marginLeft="10dp"
+                                        android:layout_marginRight="10dp"
+                                        android:gravity="center"
+                                        android:text="Select Date"
+                                        android:textAlignment="center"
+                                        android:textColor="#000"
+                                        android:textSize="18sp" />
+
+                                </android.support.v7.widget.CardView>
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/time_picker"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="15dp"
+                                android:layout_toRightOf="@+id/date_picker"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    android:id="@+id/clock_icon"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:src="@drawable/ic_clock" />
+
+                                <android.support.v7.widget.CardView
+                                    android:id="@+id/time_picker_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_toRightOf="@+id/clock_icon"
+                                    app:cardBackgroundColor="#c7c7c7"
+                                    app:cardCornerRadius="5dp">
+
+                                    <TextView
+                                        android:id="@+id/selected_start_time"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:layout_marginLeft="10dp"
+                                        android:layout_marginRight="10dp"
+                                        android:gravity="center"
+                                        android:text="Select Time"
+                                        android:textAlignment="center"
+                                        android:textColor="#000"
+                                        android:textSize="18sp" />
+
+                                </android.support.v7.widget.CardView>
+
+                            </RelativeLayout>
+
+                        </RelativeLayout>
+
+                        <TextView
+                            android:id="@+id/available_slots_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/date_time_selector_layout"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="5dp"
+                            android:text="Available Time Slots:"
+                            android:textSize="16sp" />
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/available_time_slots_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:layout_below="@+id/available_slots_label"
+                            android:layout_marginBottom="20dp" />
+
+                    </RelativeLayout>
+
+                </ScrollView>
+
+                <ScrollView
+                    android:id="@+id/barber_selection_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/barber_selection_heading_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_toRightOf="@+id/back_to_time_selection_btn"
+                            android:text="Barber Selection"
+                            android:textSize="25sp" />
+
+                        <ImageView
+                            android:id="@+id/back_to_time_selection_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_margin="10dp"
+                            android:src="@drawable/ic_back" />
+
+                        <TextView
+                            android:id="@+id/barber_selection_instruction_txt"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/barber_selection_heading_label"
+                            android:layout_margin="5dp"
+                            android:text="Select a barber from the list below or click on next to proceed forward without selecting any barber." />
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/barber_selection_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/barber_selection_instruction_txt"
+                            android:layout_margin="5dp" />
+
+                    </RelativeLayout>
+
+                </ScrollView>
+
+                <ScrollView
+                    android:id="@+id/final_receipt_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@+id/finish_booking_btn"
+                    android:layout_margin="5dp"
+                    android:visibility="gone">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/receipt_heading_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_toRightOf="@+id/back_to_barber_selection_btn"
+                            android:text="Receipt"
+                            android:textSize="25sp" />
+
+                        <ImageView
+                            android:id="@+id/back_to_barber_selection_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:layout_margin="10dp"
+                            android:src="@drawable/ic_back" />
+
+                        <TextView
+                            android:id="@+id/receipt_instruction_txt"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/receipt_heading_label"
+                            android:layout_marginTop="10dp"
+                            android:text="Below are the details of the booking you are about to make,"
+                            android:textSize="16sp" />
+
+                        <RelativeLayout
+                            android:id="@+id/booking_details_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/receipt_instruction_txt"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginRight="10dp">
+
+                            <RelativeLayout
+                                android:id="@+id/booking_date_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/booking_date_label"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="1. Date: "
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/booking_date"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_toRightOf="@+id/booking_date_label"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="24/01/2019" />
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/booking_time_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/booking_date_layout">
+
+                                <TextView
+                                    android:id="@+id/booking_time_label"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="2. Timing: "
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/booking_time"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_toRightOf="@+id/booking_time_label"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="88:88 AM to 88:88 AM" />
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/expected_time_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/booking_time_layout">
+
+                                <TextView
+                                    android:id="@+id/expected_time_label"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="3. Time: "
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/expected_time"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="0dp"
+                                    android:layout_marginLeft="0dp"
+                                    android:layout_toEndOf="@+id/expected_time_label"
+                                    android:layout_toRightOf="@+id/expected_time_label"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="25 mins" />
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/selected_barber_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/expected_time_layout">
+
+                                <TextView
+                                    android:id="@+id/selected_barber_label"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="4. Barber: "
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:id="@+id/selected_barber"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="0dp"
+                                    android:layout_marginLeft="0dp"
+                                    android:layout_toEndOf="@+id/selected_barber_label"
+                                    android:layout_toRightOf="@+id/selected_barber_label"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="Majid" />
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/services_availed_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/selected_barber_layout">
+
+                                <TextView
+                                    android:id="@+id/selected_services_label"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="5. Selected Services: "
+                                    android:textSize="16sp" />
+
+                            </RelativeLayout>
+
+                        </RelativeLayout>
+
+                        <View
+                            android:id="@+id/list_headers_top_divider"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@+id/booking_details_layout"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginRight="5dp"
+                            android:background="#000" />
+
+                        <RelativeLayout
+                            android:id="@+id/list_headers"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/list_headers_top_divider"
+                            android:layout_marginLeft="45dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginRight="5dp">
+
+                            <TextView
+                                android:id="@+id/number_label"
+                                android:layout_width="20dp"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentLeft="true"
+                                android:text="#"
+                                android:textAlignment="center"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:id="@+id/services_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_toLeftOf="@+id/cost_label"
+                                android:text="Service"
+                                android:textAlignment="center"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:id="@+id/cost_label"
+                                android:layout_width="80dp"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentTop="true"
+                                android:layout_alignParentRight="true"
+                                android:layout_marginTop="0dp"
+                                android:text="Cost"
+                                android:textAlignment="center" />
+
+                        </RelativeLayout>
+
+                        <View
+                            android:id="@+id/list_headers_bottom_divider"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@+id/list_headers"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginRight="5dp"
+                            android:background="#000" />
+
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/selected_services_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/list_headers_bottom_divider"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="5dp" />
+
+                        <View
+                            android:id="@+id/total_divider"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_below="@+id/selected_services_list"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="3dp"
+                            android:layout_marginRight="5dp"
+                            android:background="#000" />
+
+                        <RelativeLayout
+                            android:id="@+id/total_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/total_divider"
+                            android:layout_marginLeft="40dp"
+                            android:layout_marginTop="3dp"
+                            android:layout_marginRight="5dp">
+
+                            <RelativeLayout
+                                android:id="@+id/net_total_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_toLeftOf="@+id/net_total"
+                                    android:text="Net Total"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/net_total"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:textAlignment="center"
+                                    android:textSize="15sp"
+                                    tools:text="R.s 1000/-" />
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:id="@+id/service_tax_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/net_total_layout">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_toLeftOf="@+id/service_tax"
+                                    android:text="Service Tax"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/service_tax"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:textAlignment="center"
+                                    android:textSize="15sp"
+                                    tools:text="R.s 1000/-" />
+
+                            </RelativeLayout>
+
+                            <View
+                                android:id="@+id/total_cost_top_divider"
+                                android:layout_width="180dp"
+                                android:layout_height="2dp"
+                                android:layout_below="@+id/service_tax_layout"
+                                android:layout_alignParentRight="true"
+                                android:background="#000" />
+
+                            <RelativeLayout
+                                android:id="@+id/total_cost_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/total_cost_top_divider">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_toLeftOf="@+id/total_cost"
+                                    android:text="Total"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/total_cost"
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:textAlignment="center"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"
+                                    tools:text="R.s 1000/-" />
+
+                            </RelativeLayout>
+
+                            <View
+                                android:id="@+id/total_cost_bottom_divider"
+                                android:layout_width="180dp"
+                                android:layout_height="2dp"
+                                android:layout_below="@+id/total_cost_layout"
+                                android:layout_alignParentRight="true"
+                                android:background="#000" />
+
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+
+                </ScrollView>
+
+                <android.support.v7.widget.CardView
+                    android:id="@+id/finish_booking_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_alignParentBottom="true"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#a42d4e"
+                    app:cardCornerRadius="2dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="sans-serif-smallcaps"
+                        android:gravity="center"
+                        android:text="Finish Booking"
+                        android:textAlignment="center"
+                        android:textColor="#fff"
+                        android:textSize="20sp" />
+
+                </android.support.v7.widget.CardView>
+
+                <LinearLayout
+                    android:id="@+id/cancel_next_btn_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:orientation="horizontal"
+                    android:visibility="visible"
+                    android:weightSum="2">
+
+                    <android.support.v7.widget.CardView
+                        android:id="@+id/cancel_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_margin="1dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#ff4d4d">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_margin="5dp"
+                            android:fontFamily="monospace"
+                            android:text="Cancel"
+                            android:textAlignment="center"
+                            android:textColor="#fff"
+                            android:textSize="18sp" />
+
+                    </android.support.v7.widget.CardView>
+
+                    <android.support.v7.widget.CardView
+                        android:id="@+id/next_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_margin="1dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#005818">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_margin="5dp"
+                            android:fontFamily="monospace"
+                            android:text=" Next "
+                            android:textAlignment="center"
+                            android:textColor="#fff"
+                            android:textSize="18sp" />
+
+                    </android.support.v7.widget.CardView>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

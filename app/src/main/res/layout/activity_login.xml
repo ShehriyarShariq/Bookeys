@@ -4,30 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".LoginActivity"
+    android:background="#585858">
+
+    <android.support.design.widget.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/tab_layout"
+        android:layout_marginTop="50dp"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/loginPager"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"/>
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/tab_layout"
+        android:layout_above="@+id/continue_btn"
+        android:layout_marginBottom="10dp"/>
 
     <android.support.v7.widget.CardView
         android:id="@+id/continue_btn"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="50dp"
         android:layout_centerHorizontal="true"
         app:cardCornerRadius="20dp"
         android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="#0094c1">
+        app:cardBackgroundColor="#71878e">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="Continue"
             android:gravity="center"
-            android:textSize="25sp"
+            android:textSize="30sp"
             android:textColor="#eee"/>
 
     </android.support.v7.widget.CardView>

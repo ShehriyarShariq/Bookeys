@@ -1,0 +1,246 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignUpFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:layout_above="@+id/login_error">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/user_img"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="30dp"
+                    android:src="@drawable/ic_username" />
+
+                <RelativeLayout
+                    android:id="@+id/username_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_below="@+id/user_img"
+                    android:layout_marginTop="15dp">
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:alpha="0.3"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="5dp" />
+
+                    <EditText
+                        android:id="@+id/username_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:drawableLeft="@drawable/ic_username"
+                        android:drawablePadding="5dp"
+                        android:ems="30"
+                        android:fontFamily="sans-serif"
+                        android:hint="Username"
+                        android:inputType="textCapWords"
+                        android:textColorHint="#000" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/email_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_below="@+id/username_layout"
+                    android:layout_marginTop="10dp">
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:alpha="0.3"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="5dp" />
+
+                    <EditText
+                        android:id="@+id/email_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:drawableLeft="@drawable/ic_email"
+                        android:drawablePadding="5dp"
+                        android:ems="30"
+                        android:fontFamily="sans-serif"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:textColorHint="#000" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/password_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_below="@+id/email_layout"
+                    android:layout_marginTop="10dp">
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:alpha="0.3"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="5dp" />
+
+                    <EditText
+                        android:id="@+id/password_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:drawableLeft="@drawable/ic_password"
+                        android:drawablePadding="5dp"
+                        android:ems="25"
+                        android:fontFamily="sans-serif"
+                        android:hint="Password"
+                        android:inputType="textPassword"
+                        android:textColorHint="#000"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/confirm_password_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_below="@+id/password_layout"
+                    android:layout_marginTop="10dp">
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:alpha="0.3"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="5dp" />
+
+                    <EditText
+                        android:id="@+id/confirm_password_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:drawableLeft="@drawable/ic_password"
+                        android:drawablePadding="5dp"
+                        android:ems="25"
+                        android:fontFamily="sans-serif"
+                        android:hint="Confirm Password"
+                        android:inputType="textPassword"
+                        android:textColorHint="#000"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/phone_number_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_below="@+id/confirm_password_layout"
+                    android:layout_marginTop="10dp">
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="50dp"
+                        android:alpha="0.3"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="5dp" />
+
+                    <android.support.v7.widget.CardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="40dp"
+                        android:layout_marginTop="5dp"
+                        android:alpha="0.2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="45dp"
+                        android:layout_marginTop="12dp"
+                        android:elevation="10dp"
+                        android:gravity="center"
+                        android:text="+92  -"
+                        android:textAlignment="center"
+                        android:textColor="#000"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/phone_number_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginLeft="90dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:ems="20"
+                        android:hint="Phone# (3001234567)"
+                        android:inputType="number"
+                        android:maxLength="10"
+                        android:textColor="#000"
+                        android:textColorHint="#000"
+                        android:textSize="18sp" />
+
+                </RelativeLayout>
+            </RelativeLayout>
+
+        </ScrollView>
+
+        <RelativeLayout
+            android:id="@+id/login_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:visibility="invisible"
+            android:layout_alignParentBottom="true">
+
+            <ImageView
+                android:id="@+id/warning_img"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_warning" />
+
+            <TextView
+                android:id="@+id/login_error_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/warning_img"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@+id/warning_img"
+                android:text="Incorrect Email/ Password!"
+                android:textColor="#e21d37"
+                android:textSize="15sp" />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>

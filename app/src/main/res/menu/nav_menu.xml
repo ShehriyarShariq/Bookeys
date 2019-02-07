@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/my_profile"
+        android:title="Profile"/>
+
+    <item android:id="@+id/my_appointments"
+        android:title="My Appointments"/>
+
+    <item android:id="@+id/discounts"
+        android:title="Discounts"/>
+
+    <item android:id="@+id/help"
+        android:title="Help"/>
+
+    <item android:id="@+id/become_a_professional"
+        android:title="Become a Professional"/>
+
+    <item android:id="@+id/log_out"
+        android:title="LogOut"/>
+
+</menu>

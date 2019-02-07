@@ -1,0 +1,216 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignInFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/email_layout"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="10dp"
+            android:visibility="visible">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="50dp"
+                android:alpha="0.3"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="5dp" />
+
+            <EditText
+                android:id="@+id/email_input"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="50dp"
+                android:backgroundTint="@android:color/transparent"
+                android:drawableLeft="@drawable/ic_email"
+                android:drawablePadding="5dp"
+                android:ems="30"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:textColorHint="#000" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/or_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OR"
+            android:textSize="20sp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/email_layout"
+            android:textStyle="bold"/>
+
+        <RelativeLayout
+            android:id="@+id/phone_number_layout"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
+            android:layout_below="@+id/or_txt">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="50dp"
+                android:alpha="0.3"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="5dp" />
+
+            <android.support.v7.widget.CardView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginTop="5dp"
+                android:alpha="0.2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="45dp"
+                android:layout_marginTop="12dp"
+                android:elevation="10dp"
+                android:gravity="center"
+                android:text="+92  -"
+                android:textAlignment="center"
+                android:textColor="#000"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/phone_number_input"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="90dp"
+                android:backgroundTint="@android:color/transparent"
+                android:ems="20"
+                android:hint="Phone# (3001234567)"
+                android:inputType="number"
+                android:maxLength="10"
+                android:textColor="#000"
+                android:textColorHint="#000"
+                android:textSize="18sp"/>
+
+        </RelativeLayout>
+        
+        <View
+            android:id="@+id/first_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#353535"
+            android:layout_below="@id/phone_number_layout"
+            android:layout_marginTop="10dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="4dp"/>
+
+        <View
+            android:id="@+id/second_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#353535"
+            android:layout_below="@id/first_divider"
+            android:layout_marginTop="2dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="4dp"/>
+
+        <RelativeLayout
+            android:id="@+id/password_layout"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_below="@+id/second_divider"
+            android:layout_marginTop="20dp"
+            android:visibility="visible">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="50dp"
+                android:alpha="0.3"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="5dp" />
+
+            <EditText
+                android:id="@+id/password_input"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="50dp"
+                android:backgroundTint="@android:color/transparent"
+                android:drawableLeft="@drawable/ic_password"
+                android:drawablePadding="5dp"
+                android:ems="25"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:textColor="#000"
+                android:textColorHint="#000" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/login_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/password_layout"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp"
+            android:visibility="invisible">
+
+            <ImageView
+                android:id="@+id/warning_img"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_warning" />
+
+            <TextView
+                android:id="@+id/login_error_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/warning_img"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@+id/warning_img"
+                android:text="Incorrect Email/ Password!"
+                android:textColor="#e21d37"
+                android:textSize="15sp" />
+
+        </RelativeLayout>
+
+        <CheckBox
+            android:id="@+id/remember_me_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/login_error"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Remember Me!"
+            android:textColor="#aaf2ff"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/forgot_password_txt_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/remember_me_checkbox"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentRight="true"
+            android:gravity="end"
+            android:text="Forgot password!"
+            android:textColor="#aaf2ff"
+            android:textSize="15sp" />
+
+
+    </RelativeLayout>
+
+</FrameLayout>
