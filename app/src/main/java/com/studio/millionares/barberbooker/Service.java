@@ -16,6 +16,12 @@ public class Service {
         this.barbers = barbers;
     }
 
+    public Service(HashMap<String, String> serviceDetails){
+        this.serviceName = serviceDetails.get("name");
+        this.cost = serviceDetails.get("cost");
+        this.expectedTime = serviceDetails.get("expectedTime");
+    }
+
     public HashMap<String, Object> getServiceDetails(){
         HashMap<String, Object> service = new HashMap<>();
 
@@ -24,6 +30,15 @@ public class Service {
         service.put("cost", cost);
         service.put("expectedTime", expectedTime);
         service.put("barbers", expectedTime);
+
+        return service;
+    }
+
+    public HashMap<String, String> getServiceSimpleDetails(){
+        HashMap<String, String> service = new HashMap<>();
+
+        service.put("name", serviceName);
+        service.put("cost", cost);
 
         return service;
     }

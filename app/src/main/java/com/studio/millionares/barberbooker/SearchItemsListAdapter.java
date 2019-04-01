@@ -12,10 +12,12 @@ import java.util.HashMap;
 
 public class SearchItemsListAdapter extends RecyclerView.Adapter<SearchItemsListAdapter.SearchItemsListViewHolder> {
 
+    private final SearchItemsRecyclerViewListClickListener searchItemsRecyclerViewListClickListener;
     ArrayList<Salon> allSalons;
 
-    public SearchItemsListAdapter(ArrayList<Salon> allSalons) {
+    public SearchItemsListAdapter(ArrayList<Salon> allSalons, SearchItemsRecyclerViewListClickListener searchItemsRecyclerViewListClickListener) {
         this.allSalons = allSalons;
+        this.searchItemsRecyclerViewListClickListener = searchItemsRecyclerViewListClickListener;
     }
 
     @NonNull
@@ -57,6 +59,13 @@ public class SearchItemsListAdapter extends RecyclerView.Adapter<SearchItemsList
 
             salonName = itemView.findViewById(R.id.name);
             city = itemView.findViewById(R.id.city);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    searchItemsRecyclerViewListClickListener.searchItemClicked(getLayoutPosition());
+                }
+            });
         }
     }
 }

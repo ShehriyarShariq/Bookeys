@@ -2,6 +2,8 @@ package com.studio.millionares.barberbooker;
 
 public interface BarberSelectionRecyclerViewListClickListener {
 
-    public void barberSelectionRecyclerViewListClicked(int position);
+    // Interface to implement the OnItemClickListener for the recycler view
+
+    void barberSelectionRecyclerViewListClicked(String barberID);
 
 }

@@ -1,7 +1,10 @@
 package com.studio.millionares.barberbooker;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.app.Notification;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +17,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,6 +28,9 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +41,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,13 +52,11 @@ import java.util.TimeZone;
 
 public class SalonBookingDetailsActivity extends AppCompatActivity{
 
-    private static final int SERVICE_COST = 10;
-
     android.support.v7.widget.Toolbar toolbar;
     TabLayout tabLayout;
     ViewPager viewPager;
     CardView makeBookingBtn, cancelBtn, nextBtn, finishBookingBtn, datePickerBtn, timePickerBtn;
-    RelativeLayout originalLayout, bookingLayout, servicesSelectionLayout, datePicker, timePicker, getDirectionsBtnLayout;
+    RelativeLayout headerLayout, originalLayout, bookingLayout, servicesSelectionLayout, datePicker, timePicker, getDirectionsBtnLayout;
     ScrollView timeSelectionLayout, barberSelectionLayout, finalReceiptLayout;
     TextView salonName, salonPlaceHolderName, salonRating, bookingDate, bookingTime, expectedTime, netTotal, serviceTax, totalCost, selectedDate, selectedTime, selectedBarberTxt;
     RecyclerView bookingServicesList, availableTimeSlotsList, selectedServicesList, barberSelectionList;
@@ -64,13 +70,14 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
     DatabaseReference firebaseDatabase;
     FirebaseAuth firebaseAuth;
 
-
     private HashMap<String, Object> salonWorkingHoursAndDays;
     private ArrayList<HashMap<String, String>> bookedTimeSlots;
     private ArrayList<String> closedDays;
     private ArrayList<Barber> allBarbers;
+    private ArrayList<Review> allReviews;
+    private String salonDescription;
 
-    ArrayList<Service> allServices, tempAllServices;
+    ArrayList<Service> allServices, tempAllServices, tempAllVisibleServices;
     BookingServicesListAdapter bookingServicesListAdapter;
 
     ArrayList<HashMap<String, String>> rawAvailableTimeSlots;
@@ -89,10 +96,20 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
     String selectedBookingStartTime, selectedBookingEndTime;
     Barber selectedBarber;
     ArrayList<Service> allSelectedServices;
+    ArrayList<Barber> availableSalonBarbers;
     ArrayList<HashMap<String, String>> allBookedTimeSlots;
     int netCost, totalCostVal;
 
     Activity mActivity;
+
+    int headerHeight;
+
+    String currentDate, currentTime;
+
+    private Socket mSocket;
+    private Boolean hasConnection = false;
+
+    HashMap<String, Object> salonBasicDetails;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +118,20 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
         mActivity = this;
 
+        try {
+            mSocket = IO.socket("https://bookies14.herokuapp.com/");
+        } catch (URISyntaxException e) {}
+
+        if(savedInstanceState != null){
+            hasConnection = savedInstanceState.getBoolean("hasConnection");
+        }
+
+        if(!hasConnection){
+
+            mSocket.connect();
+            mSocket.on("dateAndTime", getTrueDateTime);
+        }
+
         // Get previously loaded salon details
         Intent salonIntent = getIntent();
         salonIDStr = salonIntent.getStringExtra("id");
@@ -108,12 +139,20 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         salonRatingStr = salonIntent.getStringExtra("rating");
         salonLocation = new LatLng(salonIntent.getDoubleExtra("latitude", 0), salonIntent.getDoubleExtra("longitude", 0));
 
+        salonBasicDetails = new HashMap<>();
+        salonBasicDetails.put("id", salonIntent.getStringExtra("id"));
+        salonBasicDetails.put("name", salonIntent.getStringExtra("name"));
+        salonBasicDetails.put("rating", salonIntent.getStringExtra("rating"));
+        salonBasicDetails.put("latitude", salonIntent.getDoubleExtra("latitude", 0));
+        salonBasicDetails.put("longitude", salonIntent.getDoubleExtra("longitude", 0));
+
         // Firebase database and auth instances
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
 
         /* UI Views */
         toolbar = findViewById(R.id.toolbar);
+        headerLayout = findViewById(R.id.header_layout);
         // Services, Reviews, Profile viewpager screen
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.fragments_holder);
@@ -140,7 +179,6 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         bookingTime = findViewById(R.id.booking_time);
         expectedTime = findViewById(R.id.expected_time);
         netTotal = findViewById(R.id.net_total);
-        serviceTax = findViewById(R.id.service_tax);
         totalCost = findViewById(R.id.total_cost);
         selectedServicesList = findViewById(R.id.selected_services_list);
         cancelAndNextBtnLayout = findViewById(R.id.cancel_next_btn_layout);
@@ -170,8 +208,10 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         bookedTimeSlots = new ArrayList<>();
         closedDays = new ArrayList<>();
         allBarbers = new ArrayList<>();
+        allReviews = new ArrayList<>();
 
         allSelectedServices = new ArrayList<>();
+        tempAllVisibleServices = new ArrayList<>();
 
         // Loader dialog
         loaderDialog = new LoaderDialog(this, "InfoLoader");
@@ -182,7 +222,17 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot details : dataSnapshot.getChildren()) {
-                    if (details.getKey().equals("allServices")) { // All services provided by a Salon
+                    if(details.getKey().equals("description")){
+                        salonDescription = details.getValue().toString();
+                    } else if(details.getKey().equals("reviews")){
+                        for(DataSnapshot review : details.getChildren()){
+                            HashMap<String, String> reviewDetails = new HashMap<>();
+                            for(DataSnapshot detail : review.getChildren()){
+                                reviewDetails.put(detail.getKey(), detail.getValue().toString());
+                            }
+                            allReviews.add(new Review(reviewDetails));
+                        }
+                    } else if (details.getKey().equals("allServices")) { // All services provided by a Salon
                         String id, cost = "", expectedTime = "", name = "";
                         ArrayList<String> byBarbers = new ArrayList<>();
                         for (DataSnapshot service : details.getChildren()) {
@@ -307,7 +357,9 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                     }
                 }
 
-                currentSalon = new Salon(salonIDStr, allServices, allBarbers, bookedTimeSlots, closedDays, salonWorkingHoursAndDays);
+                tempAllVisibleServices.addAll(allServices);
+
+                currentSalon = new Salon(salonIDStr, tempAllVisibleServices, allBarbers, bookedTimeSlots, closedDays, salonWorkingHoursAndDays, salonDescription, allReviews);
                 loaderDialog.hideDialog(); // Hide loader dialog once all data is loaded
 
                 // Tabs on main page
@@ -392,7 +444,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                 LinearLayoutManager barberSelectionListLinearLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);
                 barberSelectionList.setLayoutManager(barberSelectionListLinearLayoutManager);
 
-                final ArrayList<Barber> availableSalonBarbers = new ArrayList<>();
+                availableSalonBarbers = new ArrayList<>();
                 // For none selection
                 availableSalonBarbers.add(new Barber("none", "none", "none", "none", new HashMap<String, HashMap<String, Object>>(), new ArrayList<HashMap<String, String>>()));
 
@@ -400,9 +452,13 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                 barberSelectionListAdapter = new BarberSelectionListAdapter(availableSalonBarbers, new BarberSelectionRecyclerViewListClickListener() {
                     @Override
-                    public void barberSelectionRecyclerViewListClicked(int position) {
+                    public void barberSelectionRecyclerViewListClicked(String barberID) {
                         // Click listener for the barber selection
-                        selectedBarber = availableSalonBarbers.get(position);
+                        for(Barber barber : availableSalonBarbers){
+                            if(barber.getId().equals(barberID)){
+                                selectedBarber = barber;
+                            }
+                        }
 
                         if(selectedBarber.getBarberDetails().get("name").equals("none")){
                             selectedBarber = availableSalonBarbers.get(1);
@@ -425,10 +481,9 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                             netCost += Double.parseDouble(service.getServiceDetails().get("cost").toString());
                         }
 
-                        totalCostVal = netCost + SERVICE_COST;
+                        totalCostVal = netCost;
 
                         netTotal.setText("R.s " + netCost + "/-");
-                        serviceTax.setText("R.s " + SERVICE_COST + "/-");
                         totalCost.setText("R.s " + totalCostVal + "/-");
                     }
                 });
@@ -475,21 +530,59 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                     @Override
                     public void onClick(View v) {
                         // Booking start button
+                        if(headerHeight == 0){
+                            headerHeight = headerLayout.getMeasuredHeight();
+                        }
 
+                        headerLayout.setVisibility(View.VISIBLE);
                         originalLayout.setVisibility(View.GONE);
                         bookingLayout.setVisibility(View.VISIBLE);
                         servicesSelectionLayout.setVisibility(View.VISIBLE);
                         timeSelectionLayout.setVisibility(View.GONE);
                         finalReceiptLayout.setVisibility(View.GONE);
 
-                        // To reset previously selected services
-                        if (tempAllServices != null) {
-                            if (tempAllServices.size() != 0) {
-                                allServices.addAll(tempAllServices);
-                                bookingServicesListAdapter.notifyDataSetChanged();
-                                tempAllServices.clear();
+                        ValueAnimator anim = ValueAnimator.ofInt(headerHeight, 0);
+                        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                int val = (Integer) valueAnimator.getAnimatedValue();
+                                ViewGroup.LayoutParams layoutParams = headerLayout.getLayoutParams();
+                                layoutParams.height = val;
+                                headerLayout.setLayoutParams(layoutParams);
+
+                                // To reset previously selected services
+                                if (tempAllServices != null) {
+                                    if (tempAllServices.size() != 0) {
+                                        allServices.clear();
+                                        allServices.addAll(tempAllServices);
+                                        bookingServicesListAdapter.notifyDataSetChanged();
+                                        tempAllServices.clear();
+                                    }
+                                }
                             }
-                        }
+                        });
+                        anim.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
+
+                            }
+                        });
+                        anim.start();
                     }
                 });
 
@@ -547,6 +640,13 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                         int month = mCalendar.get(Calendar.MONTH);
                         int year = mCalendar.get(Calendar.YEAR);
 
+                        if(currentDate != null){
+                            String[] dateSplit = currentDate.split("-");
+                            day = Integer.parseInt(dateSplit[0]);
+                            month = Integer.parseInt(dateSplit[1]) - 1;
+                            year = Integer.parseInt(dateSplit[2]);
+                        }
+
                         // If no date selected then set selected date in dialog to current date
                         if (selectedBookingDate != null) {
                             HashMap<String, String> parsedDate = parseDate(selectedBookingDate);
@@ -582,38 +682,76 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                 cancelBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(final View v) {
                         // Cancel button
-
-                        bookingLayout.setVisibility(View.GONE);
                         originalLayout.setVisibility(View.VISIBLE);
+                        bookingLayout.setVisibility(View.GONE);
                         bookingServicesList.removeAllViewsInLayout();
                         cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
                         finishBookingBtn.setVisibility(View.GONE);
 
-                        // Clear selected services
-                        tempAllServices = new ArrayList<>();
-                        tempAllServices.addAll(allServices);
-                        allServices.clear();
-                        allSelectedServices.clear();
-                        bookingServicesListAdapter.notifyDataSetChanged();
-                        bookingServicesListAdapter.clearSelectedServices();
+                        ValueAnimator anim = ValueAnimator.ofInt(0, headerHeight);
+                        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                            @Override
+                            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                int val = (Integer) valueAnimator.getAnimatedValue();
+                                ViewGroup.LayoutParams layoutParams = headerLayout.getLayoutParams();
+                                layoutParams.height = val;
+                                headerLayout.setLayoutParams(layoutParams);
 
-                        servicesSelectionLayout.setVisibility(View.VISIBLE);
-                        timeSelectionLayout.setVisibility(View.GONE);
-                        barberSelectionLayout.setVisibility(View.GONE);
-                        finalReceiptLayout.setVisibility(View.GONE);
+                                // Clear selected services
+                                if(tempAllServices == null){
+                                    tempAllServices = new ArrayList<>();
+                                } else {
+                                    tempAllServices.clear();
+                                }
+                                tempAllServices.addAll(allServices);
 
-                        // Set selected date and time to null
-                        selectedBookingDate = null;
-                        selectedBookingStartTime = null;
-                        selectedDate.setText("Select Date");
-                        selectedTime.setText("Select Time");
-                        timePicker.setVisibility(View.GONE);
+                            }
+                        });
 
-                        // Clear available time slot list
-                        rawAvailableTimeSlots.clear();
-                        availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+                        anim.addListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                //allServices.clear();
+                                allSelectedServices.clear();
+                                bookingServicesListAdapter.notifyDataSetChanged();
+                                bookingServicesListAdapter.clearSelectedServices();
+
+                                servicesSelectionLayout.setVisibility(View.VISIBLE);
+                                timeSelectionLayout.setVisibility(View.GONE);
+                                barberSelectionLayout.setVisibility(View.GONE);
+                                finalReceiptLayout.setVisibility(View.GONE);
+
+                                // Set selected date and time to null
+                                selectedBookingDate = null;
+                                selectedBookingStartTime = null;
+                                selectedDate.setText("Select Date");
+                                selectedTime.setText("Select Time");
+                                timePicker.setVisibility(View.GONE);
+
+                                // Clear available time slot list
+                                rawAvailableTimeSlots.clear();
+                                availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animation) {
+
+                            }
+                        });
+
+                        anim.start();
                     }
                 });
 
@@ -668,7 +806,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                 finishBookingBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final LoaderDialog bookingCompletionLoader = new LoaderDialog(mActivity, "BookingCompletion");
+                        final LoaderDialog bookingCompletionLoader = new LoaderDialog(mActivity, "Process");
                         bookingCompletionLoader.showDialog();
 
                         // To check if no booking has already been made for the selected time slot
@@ -783,19 +921,18 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                                         if(!otherBarbers.getBarberDetails().get("id").toString().equals(barberID)){
                                                             ArrayList<HashMap<String, String>> bookings = (ArrayList<HashMap<String, String>>) otherBarbers.getBarberDetails().get("bookings");
                                                             for(HashMap<String, String> otherBarberBooking : bookings){
-                                                                if(otherBarberBooking.get("date").equals(barberBooking.get("date"))){
-                                                                    if((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)){
-                                                                        areOtherBarbersFree = true;
-                                                                    } else {
-                                                                        areOtherBarbersFree = false;
-                                                                    }
+                                                                if((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)){
+                                                                    areOtherBarbersFree = false;
+                                                                    break;
+                                                                } else {
+                                                                    areOtherBarbersFree = true;
                                                                 }
                                                             }
                                                         }
 
                                                     }
 
-                                                    if(areOtherBarbersFree){
+                                                    if(!areOtherBarbersFree){
                                                         tempAllActualBookedTimeSlots.add(barberBooking);
                                                     }
                                                 }
@@ -820,96 +957,181 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if(task.isSuccessful()){
-                                                HashMap<String, String> bookingDetails = new HashMap<>();
+                                                final HashMap<String, Object> bookingDetails = new HashMap<>();
                                                 bookingDetails.put("date", selectedBookingDate);
                                                 bookingDetails.put("endTime", selectedBookingEndTime);
                                                 bookingDetails.put("startTime", selectedBookingStartTime);
+                                                bookingDetails.put("amount", String.valueOf(totalCostVal));
+                                                bookingDetails.put("customerID", firebaseAuth.getCurrentUser().getUid());
 
-                                                firebaseDatabase.child("Salons").child(salonIDStr).child("barbers").child(selectedBarber.getBarberDetails().get("id").toString()).child("bookedTimeSlots").child(String.valueOf(pushKey)).setValue(bookingDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if(task.isSuccessful()){
-                                                            HashMap<String, Object> customerBookingMap = new HashMap<>();
-                                                            customerBookingMap.put("amount", String.valueOf(totalCostVal));
-                                                            customerBookingMap.put("barberID", selectedBarber.getBarberDetails().get("id").toString());
-                                                            customerBookingMap.put("salonID", salonIDStr);
-
-                                                            HashMap<String, HashMap<String, String>> bookingServices = new HashMap<>();
-
-                                                            for(Service service : allSelectedServices){
-                                                                HashMap<String, Object> serviceDetails = service.getServiceDetails();
-                                                                HashMap<String, String> usefulDetailsMap = new HashMap<>();
-
-                                                                usefulDetailsMap.put("cost", serviceDetails.get("cost").toString());
-                                                                usefulDetailsMap.put("expectedTime", serviceDetails.get("expectedTime").toString());
-                                                                usefulDetailsMap.put("name", serviceDetails.get("name").toString());
-
-                                                                bookingServices.put(serviceDetails.get("id").toString(), usefulDetailsMap);
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        for(DataSnapshot customerDetails : dataSnapshot.getChildren()){
+                                                            if(customerDetails.getKey().equals("name")){
+                                                                bookingDetails.put("customerName", customerDetails.getValue().toString());
+                                                            } else if(customerDetails.getKey().equals("phoneNum")){
+                                                                bookingDetails.put("customerPhoneNum", customerDetails.getValue().toString());
                                                             }
+                                                        }
 
-                                                            customerBookingMap.put("servicesAvailed", bookingServices);
 
-                                                            firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("currentBooking").child(String.valueOf(pushKey)).setValue(customerBookingMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-                                                                    if(task.isSuccessful()){
-                                                                        bookingCompletionLoader.hideDialog();
+                                                        HashMap<String, HashMap<String, String>> bookingServices = new HashMap<>();
 
-                                                                        bookingLayout.setVisibility(View.GONE);
-                                                                        originalLayout.setVisibility(View.VISIBLE);
-                                                                        bookingServicesList.removeAllViewsInLayout();
-                                                                        cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
-                                                                        finishBookingBtn.setVisibility(View.GONE);
+                                                        for(Service service : allSelectedServices){
+                                                            HashMap<String, Object> serviceDetails = service.getServiceDetails();
+                                                            HashMap<String, String> usefulDetailsMap = new HashMap<>();
 
-                                                                        // Clear selected services
-                                                                        tempAllServices = new ArrayList<>();
-                                                                        tempAllServices.addAll(allServices);
-                                                                        allServices.clear();
-                                                                        bookingServicesListAdapter.notifyDataSetChanged();
-                                                                        bookingServicesListAdapter.clearSelectedServices();
+                                                            usefulDetailsMap.put("cost", serviceDetails.get("cost").toString());
+                                                            usefulDetailsMap.put("expectedTime", serviceDetails.get("expectedTime").toString());
+                                                            usefulDetailsMap.put("name", serviceDetails.get("name").toString());
 
-                                                                        servicesSelectionLayout.setVisibility(View.VISIBLE);
-                                                                        timeSelectionLayout.setVisibility(View.GONE);
-                                                                        barberSelectionLayout.setVisibility(View.GONE);
-                                                                        finalReceiptLayout.setVisibility(View.GONE);
+                                                            bookingServices.put(serviceDetails.get("id").toString(), usefulDetailsMap);
+                                                        }
 
-                                                                        // Set selected date and time to null
-                                                                        selectedBookingDate = null;
-                                                                        selectedBookingStartTime = null;
-                                                                        selectedDate.setText("Select Date");
-                                                                        selectedTime.setText("Select Time");
-                                                                        timePicker.setVisibility(View.GONE);
+                                                        bookingDetails.put("servicesAvailed", bookingServices);
 
-                                                                        // Clear available time slot list
-                                                                        rawAvailableTimeSlots.clear();
-                                                                        availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+                                                        firebaseDatabase.child("Salons").child(salonIDStr).child("barbers").child(selectedBarber.getBarberDetails().get("id").toString()).child("bookedTimeSlots").child(String.valueOf(pushKey)).setValue(bookingDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if(task.isSuccessful()){
+                                                                    HashMap<String, Object> customerBookingMap = new HashMap<>();
+                                                                    customerBookingMap.put("amount", String.valueOf(totalCostVal));
+                                                                    customerBookingMap.put("barberID", selectedBarber.getBarberDetails().get("id").toString());
+                                                                    customerBookingMap.put("barberName", selectedBarber.getBarberDetails().get("name").toString());
+                                                                    customerBookingMap.put("salonID", salonIDStr);
+                                                                    customerBookingMap.put("salonName", salonNameStr);
+                                                                    customerBookingMap.put("status", "InProgress");
+                                                                    customerBookingMap.put("dateAndTime", fixTimeStamp(selectedBookingStartTime) + " on " + selectedBookingDate);
 
-                                                                        allBookedTimeSlots.clear();
-                                                                        allBookedTimeSlots.addAll(tempAllActualBookedTimeSlots);
+                                                                    HashMap<String, HashMap<String, String>> bookingServices = new HashMap<>();
 
-                                                                    } else {
-                                                                        firebaseDatabase.child("Salons").child(salonIDStr).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                            @Override
-                                                                            public void onComplete(@NonNull Task<Void> task) {
-                                                                                firebaseDatabase.child("Salons").child(salonIDStr).child("barbers").child(selectedBarber.getBarberDetails().get("id").toString()).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    for(Service service : allSelectedServices){
+                                                                        HashMap<String, Object> serviceDetails = service.getServiceDetails();
+                                                                        HashMap<String, String> usefulDetailsMap = new HashMap<>();
+
+                                                                        usefulDetailsMap.put("cost", serviceDetails.get("cost").toString());
+                                                                        usefulDetailsMap.put("expectedTime", serviceDetails.get("expectedTime").toString());
+                                                                        usefulDetailsMap.put("name", serviceDetails.get("name").toString());
+
+                                                                        bookingServices.put(serviceDetails.get("id").toString(), usefulDetailsMap);
+                                                                    }
+
+                                                                    customerBookingMap.put("servicesAvailed", bookingServices);
+
+                                                                    firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("currentBooking").child(String.valueOf(pushKey)).setValue(customerBookingMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            if(task.isSuccessful()){
+                                                                                bookingCompletionLoader.hideDialog();
+
+                                                                                ValueAnimator anim = ValueAnimator.ofInt(0, headerHeight);
+                                                                                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                                                                    @Override
+                                                                                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                                                                        int val = (Integer) valueAnimator.getAnimatedValue();
+                                                                                        ViewGroup.LayoutParams layoutParams = headerLayout.getLayoutParams();
+                                                                                        layoutParams.height = val;
+                                                                                        headerLayout.setLayoutParams(layoutParams);
+
+                                                                                        // Clear selected services
+                                                                                        if(tempAllServices == null){
+                                                                                            tempAllServices = new ArrayList<>();
+                                                                                        } else {
+                                                                                            tempAllServices.clear();
+                                                                                        }
+                                                                                        tempAllServices.addAll(allServices);
+
+                                                                                    }
+                                                                                });
+
+                                                                                anim.addListener(new Animator.AnimatorListener() {
+                                                                                    @Override
+                                                                                    public void onAnimationStart(Animator animation) {
+
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onAnimationEnd(Animator animation) {
+                                                                                        BookingFinishedDialogFragment bookingFinishedDialogFragment = new BookingFinishedDialogFragment(SalonBookingDetailsActivity.this, salonBasicDetails);
+                                                                                        bookingFinishedDialogFragment.show(getSupportFragmentManager(), "bookingFinishedDialog");
+
+                                                                                        bookingLayout.setVisibility(View.GONE);
+                                                                                        originalLayout.setVisibility(View.VISIBLE);
+                                                                                        bookingServicesList.removeAllViewsInLayout();
+                                                                                        cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
+                                                                                        finishBookingBtn.setVisibility(View.GONE);
+
+                                                                                        // Clear selected services
+                                                                                        tempAllServices = new ArrayList<>();
+                                                                                        tempAllServices.addAll(allServices);
+                                                                                        allServices.clear();
+                                                                                        bookingServicesListAdapter.notifyDataSetChanged();
+                                                                                        bookingServicesListAdapter.clearSelectedServices();
+
+                                                                                        servicesSelectionLayout.setVisibility(View.VISIBLE);
+                                                                                        timeSelectionLayout.setVisibility(View.GONE);
+                                                                                        barberSelectionLayout.setVisibility(View.GONE);
+                                                                                        finalReceiptLayout.setVisibility(View.GONE);
+
+                                                                                        // Set selected date and time to null
+                                                                                        selectedBookingDate = null;
+                                                                                        selectedBookingStartTime = null;
+                                                                                        selectedDate.setText("Select Date");
+                                                                                        selectedTime.setText("Select Time");
+                                                                                        timePicker.setVisibility(View.GONE);
+
+                                                                                        // Clear available time slot list
+                                                                                        rawAvailableTimeSlots.clear();
+                                                                                        availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+
+                                                                                        allBookedTimeSlots.clear();
+                                                                                        allBookedTimeSlots.addAll(tempAllActualBookedTimeSlots);
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onAnimationCancel(Animator animation) {
+
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onAnimationRepeat(Animator animation) {
+
+                                                                                    }
+                                                                                });
+
+                                                                                anim.start();
+
+                                                                            } else {
+                                                                                firebaseDatabase.child("Salons").child(salonIDStr).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                                     @Override
                                                                                     public void onComplete(@NonNull Task<Void> task) {
-                                                                                        bookingCompletionLoader.hideDialog();
+                                                                                        firebaseDatabase.child("Salons").child(salonIDStr).child("barbers").child(selectedBarber.getBarberDetails().get("id").toString()).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                            @Override
+                                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                                bookingCompletionLoader.hideDialog();
+                                                                                            }
+                                                                                        });
                                                                                     }
                                                                                 });
                                                                             }
-                                                                        });
-                                                                    }
+                                                                        }
+                                                                    });
+                                                                } else {
+                                                                    firebaseDatabase.child("Salons").child(salonIDStr).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            bookingCompletionLoader.hideDialog();
+                                                                        }
+                                                                    });
                                                                 }
-                                                            });
-                                                        } else {
-                                                            firebaseDatabase.child("Salons").child(salonIDStr).child("bookedTimeSlots").child(String.valueOf(pushKey)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-                                                                    bookingCompletionLoader.hideDialog();
-                                                                }
-                                                            });
-                                                        }
+                                                            }
+                                                        });
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                                     }
                                                 });
                                             } else {
@@ -921,37 +1143,89 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                     // Booking failed as slot already occupied
                                     bookingCompletionLoader.hideDialog();
 
-                                    bookingLayout.setVisibility(View.GONE);
-                                    originalLayout.setVisibility(View.VISIBLE);
-                                    bookingServicesList.removeAllViewsInLayout();
-                                    cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
-                                    finishBookingBtn.setVisibility(View.GONE);
+                                    ValueAnimator anim = ValueAnimator.ofInt(0, headerHeight);
+                                    anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                                        @Override
+                                        public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                                            int val = (Integer) valueAnimator.getAnimatedValue();
+                                            ViewGroup.LayoutParams layoutParams = headerLayout.getLayoutParams();
+                                            layoutParams.height = val;
+                                            headerLayout.setLayoutParams(layoutParams);
 
-                                    // Clear selected services
-                                    tempAllServices = new ArrayList<>();
-                                    tempAllServices.addAll(allServices);
-                                    allServices.clear();
-                                    bookingServicesListAdapter.notifyDataSetChanged();
-                                    bookingServicesListAdapter.clearSelectedServices();
+                                            // Clear selected services
+                                            if(tempAllServices == null){
+                                                tempAllServices = new ArrayList<>();
+                                            } else {
+                                                tempAllServices.clear();
+                                            }
+                                            tempAllServices.addAll(allServices);
 
-                                    servicesSelectionLayout.setVisibility(View.VISIBLE);
-                                    timeSelectionLayout.setVisibility(View.GONE);
-                                    barberSelectionLayout.setVisibility(View.GONE);
-                                    finalReceiptLayout.setVisibility(View.GONE);
+                                        }
+                                    });
 
-                                    // Set selected date and time to null
-                                    selectedBookingDate = null;
-                                    selectedBookingStartTime = null;
-                                    selectedDate.setText("Select Date");
-                                    selectedTime.setText("Select Time");
-                                    timePicker.setVisibility(View.GONE);
+                                    anim.addListener(new Animator.AnimatorListener() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
 
-                                    // Clear available time slot list
-                                    rawAvailableTimeSlots.clear();
-                                    availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+                                        }
 
-                                    allBookedTimeSlots.clear();
-                                    allBookedTimeSlots.addAll(tempAllActualBookedTimeSlots);
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            SlotTakenDialogFragment slotTakenDialogFragment = new SlotTakenDialogFragment(SalonBookingDetailsActivity.this, salonBasicDetails);
+                                            slotTakenDialogFragment.show(getSupportFragmentManager(), "SlotTakenDialog");
+
+                                            //allServices.clear();
+                                            bookingLayout.setVisibility(View.GONE);
+                                            originalLayout.setVisibility(View.VISIBLE);
+                                            bookingServicesList.removeAllViewsInLayout();
+                                            cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
+                                            finishBookingBtn.setVisibility(View.GONE);
+
+                                            // Clear selected services
+                                            tempAllServices = new ArrayList<>();
+                                            tempAllServices.addAll(allServices);
+                                            allServices.clear();
+                                            bookingServicesListAdapter.notifyDataSetChanged();
+                                            bookingServicesListAdapter.clearSelectedServices();
+
+                                            servicesSelectionLayout.setVisibility(View.VISIBLE);
+                                            timeSelectionLayout.setVisibility(View.GONE);
+                                            barberSelectionLayout.setVisibility(View.GONE);
+                                            finalReceiptLayout.setVisibility(View.GONE);
+
+                                            // Set selected date and time to null
+                                            selectedBookingDate = null;
+                                            selectedBookingStartTime = null;
+                                            selectedDate.setText("Select Date");
+                                            selectedTime.setText("Select Time");
+                                            timePicker.setVisibility(View.GONE);
+
+                                            // Clear available time slot list
+                                            rawAvailableTimeSlots.clear();
+                                            availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
+
+                                            allBookedTimeSlots.clear();
+                                            allBookedTimeSlots.addAll(tempAllActualBookedTimeSlots);
+
+                                            originalLayout.setVisibility(View.VISIBLE);
+                                            bookingLayout.setVisibility(View.GONE);
+                                            bookingServicesList.removeAllViewsInLayout();
+                                            cancelAndNextBtnLayout.setVisibility(View.VISIBLE);
+                                            finishBookingBtn.setVisibility(View.GONE);
+                                        }
+
+                                        @Override
+                                        public void onAnimationCancel(Animator animation) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationRepeat(Animator animation) {
+
+                                        }
+                                    });
+
+                                    anim.start();
                                 }
 
 
@@ -1010,17 +1284,17 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                             ArrayList<HashMap<String, String>> bookings = (ArrayList<HashMap<String, String>>) otherBarbers.getBarberDetails().get("bookings");
                                             for(HashMap<String, String> otherBarberBooking : bookings){
                                                 if((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)){
-                                                    areOtherBarbersFree = true;
-                                                    //break;
-                                                } else {
                                                     areOtherBarbersFree = false;
+                                                    break;
+                                                } else {
+                                                    areOtherBarbersFree = true;
                                                 }
                                             }
                                         }
 
                                     }
 
-                                    if(areOtherBarbersFree){
+                                    if(!areOtherBarbersFree || (allBarbers.size() == 1)){
                                         allBookedTimeSlots.add(barberBooking);
                                     }
                                 }
@@ -1085,15 +1359,56 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     };
 
+    Emitter.Listener getTrueDateTime = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(args != null){
+                        String[] fullTimeStampSplit = (args[0].toString()).split(" ");
+
+                        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+                        String month = (getIndexOf(months, fullTimeStampSplit[4]) + 1) < 10 ? "0" + (getIndexOf(months, fullTimeStampSplit[4]) + 1) : "" + (getIndexOf(months, fullTimeStampSplit[4]) + 1);
+                        String date = (fullTimeStampSplit[5].length() != 2) ? ((Integer.parseInt(fullTimeStampSplit[5]) < 10) ? "0" + fullTimeStampSplit[5] : fullTimeStampSplit[5]) : fullTimeStampSplit[5];
+                        String year = fullTimeStampSplit[6];
+
+                        currentDate = date + "-" + month + "-" + year;
+
+                        String[] timeSplit = fullTimeStampSplit[0].split(":");
+                        currentTime = (Integer.parseInt(timeSplit[0]) + 5) + ":" + timeSplit[1];
+                    }
+                }
+            });
+        }
+    };
+
+    private int getIndexOf(String[] array, String str){
+        for(int i = 0; i < array.length; i++){
+            if(array[i].equalsIgnoreCase(str)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private ArrayList<HashMap<String, String>> availableTimeSlot(ArrayList<HashMap<String, String>> bookedTimeSlots, HashMap<String, Object> salonMap, String forDate) {
         ArrayList<HashMap<String, String>> availableTimeSlots = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
-        int today = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-        String currentTime = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        if(currentDate != null){
+            String[] currentDateSplit = currentDate.split("-");
+            calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
+        }
         String dayDate = (calendar.get(Calendar.DAY_OF_MONTH)) < 10 ? "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) : String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         String month = (calendar.get(Calendar.MONTH) + 1) < 10 ? "0" + String.valueOf(calendar.get(Calendar.MONTH) + 1) : String.valueOf(calendar.get(Calendar.MONTH) + 1);
-        String currentDate = dayDate + "-" + month + "-" + calendar.get(Calendar.YEAR);
+        if(currentTime == null){
+            currentTime = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+        }
+
+        if(currentDate == null){
+            currentDate = dayDate + "-" + month + "-" + calendar.get(Calendar.YEAR);
+        }
 
         if(compareDateStrings(forDate, currentDate) == -1){
             return availableTimeSlots;
@@ -1111,10 +1426,10 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
 
         int[] workingDays = getWorkingDays(salonMap.get("workingDays").toString());
-        if (workingDays[today] == 1) {
+        if (workingDays[dayOfWeek] == 1) {
             ArrayList<HashMap<String, Object>> daysWorkingHours = (ArrayList<HashMap<String, Object>>) salonMap.get("daysWorkingHours");
             for (HashMap<String, Object> day : daysWorkingHours) {
-                if (((day.get("id")).toString()).equals(String.valueOf(dayOfWeek))) {
+                if (Integer.parseInt((day.get("id")).toString()) == dayOfWeek) {
                     String openingTime = day.get("openingTime").toString();
                     String closingTime = day.get("closingTime").toString();
                     String startTimePointer;
@@ -1370,5 +1685,13 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         parsedDate.put("year", year);
 
         return parsedDate;
+    }
+
+    private Notification getNotification(String salonName, String startTime){
+        Notification.Builder notifBuilder = new Notification.Builder(this);
+        notifBuilder.setContentTitle("Booking In 1 Hour");
+        notifBuilder.setContentText("You have a booking for " + salonName + " at " + fixTimeStamp(startTime));
+        // notifBuilder.setSmallIcon();
+        return notifBuilder.build();
     }
 }

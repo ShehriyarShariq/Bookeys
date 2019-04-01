@@ -13,6 +13,8 @@ import java.util.ArrayList;
 
 public class BarberSelectionListAdapter extends RecyclerView.Adapter<BarberSelectionListAdapter.BarberSelectionListViewHolder> {
 
+    // Adapter is bound to the list which shows all the available barbers for the selected time slot
+
     private final BarberSelectionRecyclerViewListClickListener barberSelectionListener;
 
     ArrayList<Barber> allBarbers;
@@ -25,6 +27,7 @@ public class BarberSelectionListAdapter extends RecyclerView.Adapter<BarberSelec
     @NonNull
     @Override
     public BarberSelectionListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+        // Binds the view for the adapter
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.barber_selection_list_single_item_layout, parent, false);
 
@@ -37,6 +40,7 @@ public class BarberSelectionListAdapter extends RecyclerView.Adapter<BarberSelec
         String barberRatingStr = allBarbers.get(i).getBarberDetails().get("rating").toString();
         //String barberImageURLStr = allBarbers.get(i).getBarberDetails().get("imageURL");
 
+        // Updating the UI
         if(barberNameStr.equals("none")){
             barberSelectionListViewHolder.noBarberLayout.setVisibility(View.VISIBLE);
             barberSelectionListViewHolder.barberLayout.setVisibility(View.GONE);
@@ -69,12 +73,14 @@ public class BarberSelectionListAdapter extends RecyclerView.Adapter<BarberSelec
             barberRating = itemView.findViewById(R.id.barber_rating);
             barberImage = itemView.findViewById(R.id.barber_image);
 
+            // On item click listener for a barber item
             itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            barberSelectionListener.barberSelectionRecyclerViewListClicked(getLayoutPosition());
+            // Triggers the interface event listener
+            barberSelectionListener.barberSelectionRecyclerViewListClicked((allBarbers.get(getLayoutPosition())).getId());
         }
     }
 

@@ -7,13 +7,14 @@ import java.util.HashMap;
 
 public class Salon {
 
-    private String salonID, name, imageURL, city, rating, address;
+    private String salonID, name, imageURL, city, rating, address, salonDescription;
     private LatLng location;
     private ArrayList<Service> allProvidedServices;
     private ArrayList<Barber> allBarbers;
     private ArrayList<HashMap<String, String>> bookedTimeSlots;
     private ArrayList<String> closedDays;
     private HashMap<String, Object> workingHoursAndDays;
+    private ArrayList<Review> reviews;
 
     public Salon(String salonID, String name, String address, String city, String rating, String imageURL, LatLng location) {
         this.salonID = salonID;
@@ -25,11 +26,14 @@ public class Salon {
         this.location = location;
     }
 
-    public Salon(String salonID, ArrayList<Service> allProvidedServices, ArrayList<Barber> allBarbers, ArrayList<HashMap<String, String>> bookedTimeSlots, ArrayList<String> closedDays, HashMap<String, Object> workingHoursAndDays){
+    public Salon(String salonID, ArrayList<Service> allProvidedServices, ArrayList<Barber> allBarbers, ArrayList<HashMap<String, String>> bookedTimeSlots, ArrayList<String> closedDays, HashMap<String, Object> workingHoursAndDays, String salonDescription, ArrayList<Review> reviews){
         this.allProvidedServices = allProvidedServices;
         this.allBarbers = allBarbers;
         this.bookedTimeSlots = bookedTimeSlots;
         this.workingHoursAndDays = workingHoursAndDays;
+        this.closedDays = closedDays;
+        this.salonDescription = salonDescription;
+        this.reviews = reviews;
     }
 
     public HashMap<String, Object> getSalonDetails() {
@@ -42,6 +46,8 @@ public class Salon {
         simpleMap.put("rating", rating);
         simpleMap.put("imageURL", imageURL);
         simpleMap.put("location", location);
+        simpleMap.put("description", salonDescription);
+        simpleMap.put("reviews", reviews);
 
         return simpleMap;
     }
@@ -58,5 +64,4 @@ public class Salon {
         return salonBookingDetails;
 
     }
-
 }

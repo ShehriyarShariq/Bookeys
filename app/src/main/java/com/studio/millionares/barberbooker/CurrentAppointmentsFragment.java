@@ -2,6 +2,7 @@ package com.studio.millionares.barberbooker;
 
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 /**
@@ -19,8 +19,8 @@ import java.util.HashMap;
  */
 public class CurrentAppointmentsFragment extends Fragment {
 
-    private ArrayList<HashMap<String, Object>> currentBookings;
-    CurrentAndPastAppointmentsListAdapter currentAppointmentsListAdapter;
+    private ArrayList<Appointment> currentBookings;
+    CurrentAppointmentsListAdapter currentAppointmentsListAdapter;
 
     RecyclerView currentBookingsList;
 
@@ -29,7 +29,7 @@ public class CurrentAppointmentsFragment extends Fragment {
     }
 
     @SuppressLint("ValidFragment")
-    public CurrentAppointmentsFragment(ArrayList<HashMap<String, Object>> currentBookings) {
+    public CurrentAppointmentsFragment(ArrayList<Appointment> currentBookings) {
         this.currentBookings = currentBookings;
     }
 
@@ -44,7 +44,15 @@ public class CurrentAppointmentsFragment extends Fragment {
         LinearLayoutManager currentBookingsListLinearLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         currentBookingsList.setLayoutManager(currentBookingsListLinearLayoutManager);
 
-        currentAppointmentsListAdapter = new CurrentAndPastAppointmentsListAdapter("current", currentBookings);
+        currentAppointmentsListAdapter = new CurrentAppointmentsListAdapter("current", currentBookings, new AppointmentsRecyclerViewListClickListener() {
+            @Override
+            public void AppointmentListOnClick(Appointment appointment) {
+                Intent appointmentIntent = new Intent(getActivity(), AppointmentDetailsActivity.class);
+                appointmentIntent.putExtra("appointment", appointment);
+
+                startActivity(appointmentIntent);
+            }
+        });
         currentBookingsList.setAdapter(currentAppointmentsListAdapter);
 
 

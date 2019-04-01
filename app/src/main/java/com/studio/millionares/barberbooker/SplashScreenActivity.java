@@ -11,19 +11,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class SplashScreenActivity extends AppCompatActivity {
-
-    private Timer timer;
-    private CloseSplashScreenActivity closeSplashScreenActivity;
 
     private DatabaseReference firebaseDatabase;
     private FirebaseAuth firebaseAuth;
@@ -36,29 +27,20 @@ public class SplashScreenActivity extends AppCompatActivity {
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
 
-        closeSplashScreenActivity = new CloseSplashScreenActivity();
-        timer = new Timer();
-        timer.schedule(closeSplashScreenActivity, 1500);
-    }
+        SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
 
-    class CloseSplashScreenActivity extends TimerTask {
+        String email = sharedPreferences.getString("email", "");
+        String password = sharedPreferences.getString("password", "");
 
-        @Override
-        public void run() {
-            SharedPreferences sharedPreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
-
-            String email = sharedPreferences.getString("email", "");
-            String password = sharedPreferences.getString("password", "");
-
-            if(email.equals("")){
-                startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
-                finish();
-            } else {
-                firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("salonUpdates").addListenerForSingleValueEvent(new ValueEventListener() {
+        if(email.equals("")){
+            startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
+            finish();
+        } else {
+            firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if(task.isSuccessful()){
+                            /*firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("salonUpdates").addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     boolean isUpdateAvailable = false;
@@ -93,14 +75,16 @@ public class SplashScreenActivity extends AppCompatActivity {
                                 public void onCancelled(@NonNull DatabaseError databaseError) {
 
                                 }
-                            });
-                        } else {
-                            startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
-                            finish();
-                        }
+                            });*/
+
+                        startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+                        finish();
+                    } else {
+                        startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
+                        finish();
                     }
-                });
-            }
+                }
+            });
         }
     }
 }

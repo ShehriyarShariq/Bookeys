@@ -201,7 +201,7 @@
                         android:layout_marginLeft="90dp"
                         android:backgroundTint="@android:color/transparent"
                         android:ems="20"
-                        android:hint="Phone# (3001234567)"
+                        android:hint="# E.g xxx-xxxxxxx"
                         android:inputType="number"
                         android:maxLength="10"
                         android:textColor="#000"

@@ -29,8 +29,8 @@ public class SelectedServicesListAdapter extends RecyclerView.Adapter<SelectedSe
     @Override
     public void onBindViewHolder(@NonNull SelectedServicesListViewHolder selectedServicesListViewHolder, int i) {
         String position = String.valueOf(i + 1);
-        String serviceName = allSelectedServices.get(i).getServiceDetails().get("name").toString();
-        String serviceCost = "R.s " + allSelectedServices.get(i).getServiceDetails().get("cost").toString() + "/-";
+        String serviceName = allSelectedServices.get(i).getServiceSimpleDetails().get("name");
+        String serviceCost = "R.s " + allSelectedServices.get(i).getServiceSimpleDetails().get("cost") + "/-";
 
         selectedServicesListViewHolder.positionNumberTxt.setText(position + ".");
         selectedServicesListViewHolder.serviceNameTxt.setText(serviceName);

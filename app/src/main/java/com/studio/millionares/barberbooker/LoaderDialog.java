@@ -27,8 +27,11 @@ public class LoaderDialog {
             case "InfoLoader":
                 label.setText("Loading...");
                 break;
-            case "BookingCompletion":
+            case "Process":
                 label.setText("Processing...");
+                break;
+            case "Send":
+                label.setText("Sending...");
                 break;
         }
 

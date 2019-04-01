@@ -5,9 +5,11 @@ import java.util.HashMap;
 
 public class Barber {
 
-    String id, name, rating, imageURL;
-    HashMap<String, HashMap<String, Object>> workingHours;
-    ArrayList<HashMap<String, String>> bookings;
+    // Barber object description
+
+    private String id, name, rating, imageURL;
+    private HashMap<String, HashMap<String, Object>> workingHours;
+    private ArrayList<HashMap<String, String>> bookings;
 
     public Barber(String id, String name, String rating, String imageURL, HashMap<String, HashMap<String, Object>> workingHours, ArrayList<HashMap<String, String>> bookings){
         this.id = id;
@@ -18,6 +20,7 @@ public class Barber {
         this.bookings = bookings;
     }
 
+    // Get all appointment details
     public HashMap<String, Object> getBarberDetails(){
         HashMap<String, Object> barberDetails = new HashMap<>();
 
@@ -31,4 +34,7 @@ public class Barber {
         return barberDetails;
     }
 
+    public String getId() {
+        return id;
+    }
 }

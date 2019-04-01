@@ -5,14 +5,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class CurrentAndPastBookingsPagerAdapter extends FragmentStatePagerAdapter {
 
     private int numOfTabs;
-    private ArrayList<HashMap<String, Object>> currentBookings, pastBookings;
+    private ArrayList<Appointment> currentBookings, pastBookings;
 
-    public CurrentAndPastBookingsPagerAdapter(FragmentManager fm, int numOfTabs, ArrayList<HashMap<String, Object>> currentBookings, ArrayList<HashMap<String, Object>> pastBookings) {
+    public CurrentAndPastBookingsPagerAdapter(FragmentManager fm, int numOfTabs, ArrayList<Appointment> currentBookings, ArrayList<Appointment> pastBookings) {
         super(fm);
         this.numOfTabs = numOfTabs;
         this.currentBookings = currentBookings;

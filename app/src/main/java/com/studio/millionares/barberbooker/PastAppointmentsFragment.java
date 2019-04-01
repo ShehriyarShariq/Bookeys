@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 /**
@@ -19,17 +18,17 @@ import java.util.HashMap;
  */
 public class PastAppointmentsFragment extends Fragment {
 
-    private ArrayList<HashMap<String, Object>> pastBookings;
+    private ArrayList<Appointment> pastBookings;
 
     RecyclerView pastBookingsList;
-    CurrentAndPastAppointmentsListAdapter pastAppointmentsListAdapter;
+    PastAppointmentsListAdapter pastAppointmentsListAdapter;
 
     public PastAppointmentsFragment() {
         // Required empty public constructor
     }
 
     @SuppressLint("ValidFragment")
-    public PastAppointmentsFragment(ArrayList<HashMap<String, Object>> pastBookings) {
+    public PastAppointmentsFragment(ArrayList<Appointment> pastBookings) {
         this.pastBookings = pastBookings;
     }
 
@@ -43,7 +42,7 @@ public class PastAppointmentsFragment extends Fragment {
         LinearLayoutManager pastBookingsListLinearLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         pastBookingsList.setLayoutManager(pastBookingsListLinearLayoutManager);
 
-        pastAppointmentsListAdapter = new CurrentAndPastAppointmentsListAdapter("past", pastBookings);
+        pastAppointmentsListAdapter = new PastAppointmentsListAdapter("past", pastBookings);
         pastBookingsList.setAdapter(pastAppointmentsListAdapter);
 
         return view;
