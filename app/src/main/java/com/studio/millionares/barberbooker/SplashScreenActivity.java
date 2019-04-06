@@ -32,14 +32,14 @@ public class SplashScreenActivity extends AppCompatActivity {
         String email = sharedPreferences.getString("email", "");
         String password = sharedPreferences.getString("password", "");
 
-        if(email.equals("")){
+        if (email.equals("")) {
             startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
             finish();
         } else {
             firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
+                    if (task.isSuccessful()) {
                             /*firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("salonUpdates").addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -77,8 +77,13 @@ public class SplashScreenActivity extends AppCompatActivity {
                                 }
                             });*/
 
-                        startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
-                        finish();
+                        if(firebaseAuth.getCurrentUser().isEmailVerified()){
+                            startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+                            finish();
+                        } else {
+                            startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
+                            finish();
+                        }
                     } else {
                         startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
                         finish();

@@ -1,7 +1,9 @@
 package com.studio.millionares.barberbooker;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -74,61 +76,74 @@ public class LoginActivity extends AppCompatActivity {
         loginPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         // For first page initially
-        if(loginPager.getCurrentItem() == 0){
+        if (loginPager.getCurrentItem() == 0) {
             continueBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
                     final View view = loginPager.getChildAt(0);
                     final EditText email = view.findViewById(R.id.email_input);
-                    final EditText phoneNum = view.findViewById(R.id.phone_number_input);
+//                    final EditText phoneNum = view.findViewById(R.id.phone_number_input);
                     final EditText password = view.findViewById(R.id.password_input);
                     final RelativeLayout loginError = view.findViewById(R.id.login_error);
                     final TextView loginErrorStatus = view.findViewById(R.id.login_error_status);
 
-                    if(email.isFocusable() && !phoneNum.isFocusable()){ // Email login
-                        if(!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()){
+                    if (email.isFocusable()) { // && !phoneNum.isFocusable()) { // Email login
+                        if (!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()) {
                             loginError.setVisibility(View.INVISIBLE);
                             final ProgressDialog progressDialog = ProgressDialog.show(LoginActivity.this, "Signing In...", "Processing...", true);
 
                             firebaseAuth.signInWithEmailAndPassword(email.getText().toString().trim(), password.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if(task.isSuccessful()){
+                                    if (task.isSuccessful()) {
                                         firebaseDatabase.child("Customers").addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.hasChild(firebaseAuth.getCurrentUser().getUid())){
-                                                    for(DataSnapshot user : dataSnapshot.getChildren()){
-                                                        if(user.getKey().equals(firebaseAuth.getCurrentUser().getUid())){
+                                                if (dataSnapshot.hasChild(firebaseAuth.getCurrentUser().getUid())) {
+                                                    for (DataSnapshot user : dataSnapshot.getChildren()) {
+                                                        if (user.getKey().equals(firebaseAuth.getCurrentUser().getUid())) {
                                                             String phoneNum = "", isPhoneNumVerified = "false";
 
-                                                            for(DataSnapshot details : user.getChildren()){
-                                                                if(details.getKey().equals("phoneNum")){
+                                                            for (DataSnapshot details : user.getChildren()) {
+                                                                if (details.getKey().equals("phoneNum")) {
                                                                     phoneNum = details.getValue().toString().trim();
-                                                                } else if(details.getKey().equals("verified")){
-                                                                    for(DataSnapshot type : details.getChildren()){
-                                                                        if(type.getKey().equals("phoneNum")){
+                                                                } else if (details.getKey().equals("verified")) {
+                                                                    for (DataSnapshot type : details.getChildren()) {
+                                                                        if (type.getKey().equals("phoneNum")) {
                                                                             isPhoneNumVerified = type.getValue().toString().trim();
                                                                         }
                                                                     }
                                                                 }
                                                             }
 
-                                                            if(isPhoneNumVerified.equals("false")){ // Phone number not validated
+                                                            if (!firebaseAuth.getCurrentUser().isEmailVerified()) {
                                                                 progressDialog.dismiss();
-                                                                loginError.setVisibility(View.INVISIBLE);
-
-                                                                // Opens phone number verification activity
-
-                                                                Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
-                                                                Bundle phoneNumberCarrier = new Bundle();
-                                                                phoneNumberCarrier.putString("from", "signIn");
-                                                                phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum);
-
-                                                                verificationActivity.putExtras(phoneNumberCarrier);
-                                                                startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
-                                                            } else { // Phone number verified
+                                                                AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                                emailVerificationBuilder.setTitle("Email Not Verified!");
+                                                                emailVerificationBuilder.setMessage("Verify your email to login. Would you like to receive another verification email?");
+                                                                emailVerificationBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(final DialogInterface dialog, int which) {
+                                                                        firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+//                                                                                Toast.makeText(LoginActivity.this, "Verification email sent @ " + email.getText().toString(), Toast.LENGTH_SHORT).show();
+                                                                                firebaseAuth.signOut();
+                                                                                dialog.dismiss();
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                                emailVerificationBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                        dialog.dismiss();
+                                                                    }
+                                                                });
+                                                                AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                                emailVerificationDialog.show();
+                                                            } else {
                                                                 progressDialog.dismiss();
                                                                 loginError.setVisibility(View.INVISIBLE);
 
@@ -141,6 +156,34 @@ public class LoginActivity extends AppCompatActivity {
 
                                                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                                                 finish();
+
+//                                                                if (isPhoneNumVerified.equals("false")) { // Phone number not validated
+//                                                                    progressDialog.dismiss();
+//                                                                    loginError.setVisibility(View.INVISIBLE);
+//
+//                                                                    // Opens phone number verification activity
+//
+//                                                                    Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
+//                                                                    Bundle phoneNumberCarrier = new Bundle();
+//                                                                    phoneNumberCarrier.putString("from", "signIn");
+//                                                                    phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum);
+//
+//                                                                    verificationActivity.putExtras(phoneNumberCarrier);
+//                                                                    startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
+//                                                                } else { // Phone number verified
+//                                                                    progressDialog.dismiss();
+//                                                                    loginError.setVisibility(View.INVISIBLE);
+//
+//                                                                    SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+//                                                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//
+//                                                                    editor.putString("email", email.getText().toString());
+//                                                                    editor.putString("password", password.getText().toString());
+//                                                                    editor.commit();
+//
+//                                                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                                                                    finish();
+//                                                                }
                                                             }
                                                         }
                                                     }
@@ -169,33 +212,35 @@ public class LoginActivity extends AppCompatActivity {
                             loginError.setVisibility(View.VISIBLE);
                             loginErrorStatus.setText("Fill required fields");
                         }
-                    } else if (phoneNum.isFocusable() && !email.isFocusable()) { // Phone number login
-                        Toast.makeText(getApplicationContext(), "Phone number login", Toast.LENGTH_SHORT).show();
-
-                        // For phone number login
-                        if(!phoneNum.getText().toString().isEmpty()){
-                            loginError.setVisibility(View.INVISIBLE);
-
-                            if(!phoneNumValidation(phoneNum.getText().toString().trim())){
-                                loginError.setVisibility(View.VISIBLE);
-                                loginErrorStatus.setText("Incorrect Phone #");
-                            } else {
-                                Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
-                                Bundle phoneNumberCarrier = new Bundle();
-                                phoneNumberCarrier.putString("from", "signIn");
-                                phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
-
-                                verificationActivity.putExtras(phoneNumberCarrier);
-                                startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
-
-
-                            }
-
-                        } else { // Phone number not provided
-                            loginError.setVisibility(View.VISIBLE);
-                            loginErrorStatus.setText("Fill required fields");
-                        }
-                    } else {
+                    }
+//                    else if (!email.isFocusable() && phoneNum.isFocusable()) { // Phone number login
+//                        Toast.makeText(getApplicationContext(), "Phone number login", Toast.LENGTH_SHORT).show();
+//
+//                        // For phone number login
+//                        if (!phoneNum.getText().toString().isEmpty()) {
+//                            loginError.setVisibility(View.INVISIBLE);
+//
+//                            if (!phoneNumValidation(phoneNum.getText().toString().trim())) {
+//                                loginError.setVisibility(View.VISIBLE);
+//                                loginErrorStatus.setText("Incorrect Phone #");
+//                            } else {
+//                                Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
+//                                Bundle phoneNumberCarrier = new Bundle();
+//                                phoneNumberCarrier.putString("from", "signIn");
+//                                phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
+//
+//                                verificationActivity.putExtras(phoneNumberCarrier);
+//                                startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
+//
+//
+//                            }
+//
+//                        } else { // Phone number not provided
+//                            loginError.setVisibility(View.VISIBLE);
+//                            loginErrorStatus.setText("Fill required fields");
+//                        }
+//                    }
+                    else {
                         // Everything is empty
                         loginError.setVisibility(View.VISIBLE);
                         loginErrorStatus.setText("Fill required fields");
@@ -213,61 +258,75 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(final int position) {
-                switch (position){
+                switch (position) {
                     case 0: // Signin page
                         continueBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 final View view = loginPager.getChildAt(0);
                                 final EditText email = view.findViewById(R.id.email_input);
-                                final EditText phoneNum = view.findViewById(R.id.phone_number_input);
+//                                final EditText phoneNum = view.findViewById(R.id.phone_number_input);
                                 final EditText password = view.findViewById(R.id.password_input);
                                 final RelativeLayout loginError = view.findViewById(R.id.login_error);
                                 final TextView loginErrorStatus = view.findViewById(R.id.login_error_status);
 
-                                if(email.isFocusable() && !phoneNum.isFocusable()){ // Email login
-                                    if(!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()){
+                                if (email.isFocusable()) {// && !phoneNum.isFocusable()) { // Email login
+                                    if (!email.getText().toString().isEmpty() && !password.getText().toString().isEmpty()) {
                                         loginError.setVisibility(View.INVISIBLE);
                                         final ProgressDialog progressDialog = ProgressDialog.show(LoginActivity.this, "Signing In...", "Processing...", true);
 
                                         firebaseAuth.signInWithEmailAndPassword(email.getText().toString().trim(), password.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                             @Override
                                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                                if(task.isSuccessful()){
+                                                if (task.isSuccessful()) {
                                                     firebaseDatabase.child("Customers").addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                            if(dataSnapshot.hasChild(firebaseAuth.getCurrentUser().getUid())){
-                                                                for(DataSnapshot user : dataSnapshot.getChildren()){
-                                                                    if(user.getKey().equals(firebaseAuth.getCurrentUser().getUid())){
+                                                            if (dataSnapshot.hasChild(firebaseAuth.getCurrentUser().getUid())) {
+                                                                for (DataSnapshot user : dataSnapshot.getChildren()) {
+                                                                    if (user.getKey().equals(firebaseAuth.getCurrentUser().getUid())) {
                                                                         String phoneNum = "", isPhoneNumVerified = "false";
 
-                                                                        for(DataSnapshot details : user.getChildren()){
-                                                                            if(details.getKey().equals("phoneNum")){
+                                                                        for (DataSnapshot details : user.getChildren()) {
+                                                                            if (details.getKey().equals("phoneNum")) {
                                                                                 phoneNum = details.getValue().toString().trim();
-                                                                            } else if(details.getKey().equals("verified")){
-                                                                                for(DataSnapshot type : details.getChildren()){
-                                                                                    if(type.getKey().equals("phoneNum")){
+                                                                            } else if (details.getKey().equals("verified")) {
+                                                                                for (DataSnapshot type : details.getChildren()) {
+                                                                                    if (type.getKey().equals("phoneNum")) {
                                                                                         isPhoneNumVerified = type.getValue().toString().trim();
                                                                                     }
                                                                                 }
                                                                             }
                                                                         }
 
-                                                                        if(isPhoneNumVerified.equals("false")){ // Phone number not validated
+                                                                        if (!firebaseAuth.getCurrentUser().isEmailVerified()) {
                                                                             progressDialog.dismiss();
-                                                                            loginError.setVisibility(View.INVISIBLE);
-
-                                                                            // Opens phone number verification activity
-
-                                                                            Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
-                                                                            Bundle phoneNumberCarrier = new Bundle();
-                                                                            phoneNumberCarrier.putString("from", "signIn");
-                                                                            phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum);
-
-                                                                            verificationActivity.putExtras(phoneNumberCarrier);
-                                                                            startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
-                                                                        } else { // Phone number verified
+                                                                            AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                                            emailVerificationBuilder.setTitle("Email Not Verified!");
+                                                                            emailVerificationBuilder.setMessage("Verify your email to login. Would you like to receive another verification email?");
+                                                                            emailVerificationBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                                                @Override
+                                                                                public void onClick(final DialogInterface dialog, int which) {
+                                                                                    firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onComplete(@NonNull Task<Void> task) {
+//                                                                                            Toast.makeText(LoginActivity.this, "Verification email sent @ " + email.getText().toString(), Toast.LENGTH_SHORT).show();
+                                                                                            firebaseAuth.signOut();
+                                                                                            dialog.dismiss();
+                                                                                        }
+                                                                                    });
+                                                                                }
+                                                                            });
+                                                                            emailVerificationBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                                                @Override
+                                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                                    firebaseAuth.signOut();
+                                                                                    dialog.dismiss();
+                                                                                }
+                                                                            });
+                                                                            AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                                            emailVerificationDialog.show();
+                                                                        } else {
                                                                             progressDialog.dismiss();
                                                                             loginError.setVisibility(View.INVISIBLE);
 
@@ -280,6 +339,33 @@ public class LoginActivity extends AppCompatActivity {
 
                                                                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                                                             finish();
+//                                                                            if (isPhoneNumVerified.equals("false")) { // Phone number not validated
+//                                                                                progressDialog.dismiss();
+//                                                                                loginError.setVisibility(View.INVISIBLE);
+//
+//                                                                                // Opens phone number verification activity
+//
+//                                                                                Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
+//                                                                                Bundle phoneNumberCarrier = new Bundle();
+//                                                                                phoneNumberCarrier.putString("from", "signIn");
+//                                                                                phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum);
+//
+//                                                                                verificationActivity.putExtras(phoneNumberCarrier);
+//                                                                                startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
+//                                                                            } else { // Phone number verified
+//                                                                                progressDialog.dismiss();
+//                                                                                loginError.setVisibility(View.INVISIBLE);
+//
+//                                                                                SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+//                                                                                SharedPreferences.Editor editor = sharedPreferences.edit();
+//
+//                                                                                editor.putString("email", email.getText().toString());
+//                                                                                editor.putString("password", password.getText().toString());
+//                                                                                editor.commit();
+//
+//                                                                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                                                                                finish();
+//                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -308,33 +394,35 @@ public class LoginActivity extends AppCompatActivity {
                                         loginError.setVisibility(View.VISIBLE);
                                         loginErrorStatus.setText("Fill required fields");
                                     }
-                                } else if (phoneNum.isFocusable() && !email.isFocusable()) { // Phone number login
-                                    Toast.makeText(getApplicationContext(), "Phone number login", Toast.LENGTH_SHORT).show();
-
-                                    // For phone number login
-                                    if(!phoneNum.getText().toString().isEmpty()){
-                                        loginError.setVisibility(View.INVISIBLE);
-
-                                        if(!phoneNumValidation(phoneNum.getText().toString().trim())){
-                                            loginError.setVisibility(View.VISIBLE);
-                                            loginErrorStatus.setText("Incorrect Phone #");
-                                        } else {
-                                            Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
-                                            Bundle phoneNumberCarrier = new Bundle();
-                                            phoneNumberCarrier.putString("from", "signIn");
-                                            phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
-
-                                            verificationActivity.putExtras(phoneNumberCarrier);
-                                            startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
-
-
-                                        }
-
-                                    } else { // Phone number not provided
-                                        loginError.setVisibility(View.VISIBLE);
-                                        loginErrorStatus.setText("Fill required fields");
-                                    }
-                                } else {
+                                }
+//                                else if (phoneNum.isFocusable() && !email.isFocusable()) { // Phone number login
+//                                    Toast.makeText(getApplicationContext(), "Phone number login", Toast.LENGTH_SHORT).show();
+//
+//                                    // For phone number login
+//                                    if (!phoneNum.getText().toString().isEmpty()) {
+//                                        loginError.setVisibility(View.INVISIBLE);
+//
+//                                        if (!phoneNumValidation(phoneNum.getText().toString().trim())) {
+//                                            loginError.setVisibility(View.VISIBLE);
+//                                            loginErrorStatus.setText("Incorrect Phone #");
+//                                        } else {
+//                                            Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
+//                                            Bundle phoneNumberCarrier = new Bundle();
+//                                            phoneNumberCarrier.putString("from", "signIn");
+//                                            phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
+//
+//                                            verificationActivity.putExtras(phoneNumberCarrier);
+//                                            startActivityForResult(verificationActivity, SIGNIN_VERIFICATION_REQ);
+//
+//
+//                                        }
+//
+//                                    } else { // Phone number not provided
+//                                        loginError.setVisibility(View.VISIBLE);
+//                                        loginErrorStatus.setText("Fill required fields");
+//                                    }
+//                                }
+                                else {
                                     // Everything is empty
                                     loginError.setVisibility(View.VISIBLE);
                                     loginErrorStatus.setText("Fill required fields");
@@ -348,7 +436,7 @@ public class LoginActivity extends AppCompatActivity {
                             public void onClick(View v) {
                                 final View view = loginPager.getChildAt(position);
                                 final EditText username = view.findViewById(R.id.username_input);
-                                final EditText email =  view.findViewById(R.id.email_input);
+                                final EditText email = view.findViewById(R.id.email_input);
                                 final EditText password = view.findViewById(R.id.password_input);
                                 final EditText confirmPassword = view.findViewById(R.id.confirm_password_input);
                                 final EditText phoneNum = view.findViewById(R.id.phone_number_input);
@@ -358,10 +446,10 @@ public class LoginActivity extends AppCompatActivity {
                                 SharedPreferences sharedPreferences = getSharedPreferences("SharedPrefs", MODE_PRIVATE);
                                 final SharedPreferences.Editor editor = sharedPreferences.edit();
 
-                                if(!username.getText().toString().isEmpty() && !email.getText().toString().isEmpty() && !password.getText().toString().isEmpty() && !confirmPassword.getText().toString().isEmpty() && !phoneNum.getText().toString().isEmpty()){
+                                if (!username.getText().toString().isEmpty() && !email.getText().toString().isEmpty() && !password.getText().toString().isEmpty() && !confirmPassword.getText().toString().isEmpty() && !phoneNum.getText().toString().isEmpty()) {
                                     loginError.setVisibility(View.INVISIBLE);
 
-                                    if(password.getText().toString().length() < 6){
+                                    if (password.getText().toString().length() < 6) {
                                         loginError.setVisibility(View.VISIBLE);
                                         loginErrorStatus.setText("Password must be at least 6 characters.");
                                     } else {
@@ -380,7 +468,6 @@ public class LoginActivity extends AppCompatActivity {
                                                     @Override
                                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                                         if (task.isSuccessful()) {
-                                                            progressDialog.dismiss();
                                                             loginError.setVisibility(View.INVISIBLE);
 
                                                             final String userID = firebaseAuth.getCurrentUser().getUid();
@@ -389,26 +476,43 @@ public class LoginActivity extends AppCompatActivity {
                                                             firebaseDatabase.child("Customers").child(userID).setValue(customer.getCustomerMap()).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                 @Override
                                                                 public void onComplete(@NonNull Task<Void> task) {
-                                                                    progressDialog.dismiss();
-                                                                    if(task.isSuccessful()){
-                                                                        Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
-                                                                        Bundle phoneNumberCarrier = new Bundle();
-                                                                        phoneNumberCarrier.putString("from", "signUp");
-                                                                        phoneNumberCarrier.putString("userID", userID);
-                                                                        phoneNumberCarrier.putString("username", username.getText().toString().trim());
-                                                                        phoneNumberCarrier.putString("email", firebaseAuth.getCurrentUser().getEmail());
-                                                                        phoneNumberCarrier.putString("password", password.getText().toString().trim());
-                                                                        phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
+                                                                    if (task.isSuccessful()) {
+//                                                                        Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
+//                                                                        Bundle phoneNumberCarrier = new Bundle();
+//                                                                        phoneNumberCarrier.putString("from", "signUp");
+//                                                                        phoneNumberCarrier.putString("userID", userID);
+//                                                                        phoneNumberCarrier.putString("username", username.getText().toString().trim());
+//                                                                        phoneNumberCarrier.putString("email", firebaseAuth.getCurrentUser().getEmail());
+//                                                                        phoneNumberCarrier.putString("password", password.getText().toString().trim());
+//                                                                        phoneNumberCarrier.putString("phoneNum", "+92" + phoneNum.getText().toString().trim());
+//
+//                                                                        verificationActivity.putExtras(phoneNumberCarrier);
+//                                                                        startActivityForResult(verificationActivity, SIGNUP_VERIFICATION_REQ);
 
-                                                                        verificationActivity.putExtras(phoneNumberCarrier);
-                                                                        startActivityForResult(verificationActivity, SIGNUP_VERIFICATION_REQ);
-
+                                                                        firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                progressDialog.dismiss();
+                                                                                AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                                                emailVerificationBuilder.setTitle("Verification Email Sent!");
+                                                                                emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
+                                                                                emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                                                    @Override
+                                                                                    public void onClick(final DialogInterface dialog, int which) {
+                                                                                        firebaseAuth.signOut();
+                                                                                        dialog.dismiss();
+                                                                                    }
+                                                                                });
+                                                                                AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                                                emailVerificationDialog.show();
+                                                                            }
+                                                                        });
                                                                     } else {
+                                                                        progressDialog.dismiss();
                                                                         Toast.makeText(getApplicationContext(), "Some error occurred! Try again!", Toast.LENGTH_SHORT).show();
                                                                     }
                                                                 }
                                                             });
-
 
 
                                                         } else {
@@ -465,8 +569,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == SIGNUP_VERIFICATION_REQ){ // From signup phone verification
-            if(resultCode == Activity.RESULT_OK){ // If code successfully entered
+        if (requestCode == SIGNUP_VERIFICATION_REQ) { // From signup phone verification
+            if (resultCode == Activity.RESULT_OK) { // If code successfully entered
                 loginPager.setCurrentItem(0, true);
 
                 // Login through email and password
@@ -480,7 +584,7 @@ public class LoginActivity extends AppCompatActivity {
                 firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             firebaseDatabase.child("Customers").child(userID).child("verified").child("phoneNum").setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -493,16 +597,39 @@ public class LoginActivity extends AppCompatActivity {
                                     editor.putString("password", password);
                                     editor.commit();
 
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                    finish();
+                                    if (firebaseAuth.getCurrentUser().isEmailVerified()) {
+                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                        finish();
+                                    } else {
+                                        AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                        emailVerificationBuilder.setTitle("Verification Email Sent!");
+                                        emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
+                                        emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(final DialogInterface dialog, int which) {
+                                                firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+//                                                                                        Toast.makeText(LoginActivity.this, "Verification email sent @ " + email.getText().toString(), Toast.LENGTH_SHORT).show();
+                                                        firebaseAuth.signOut();
+                                                        dialog.dismiss();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                        AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                        emailVerificationDialog.show();
+                                    }
+
+
                                 }
                             });
                         }
                     }
                 });
             }
-        } else if(requestCode == SIGNIN_VERIFICATION_REQ){ // Phone number verification on  signin
-            if(resultCode == Activity.RESULT_OK){
+        } else if (requestCode == SIGNIN_VERIFICATION_REQ) { // Phone number verification on  signin
+            if (resultCode == Activity.RESULT_OK) {
                 final ProgressDialog progressDialog = ProgressDialog.show(LoginActivity.this, "Signing In...", "Processing...", true);
                 final String verificationID = data.getStringExtra("verificationID");
                 final String code = data.getStringExtra("code");
@@ -513,13 +640,13 @@ public class LoginActivity extends AppCompatActivity {
                 firebaseAuth.signInWithCredential(phoneAuthCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            if(firebaseAuth.getCurrentUser().getEmail() == null) {
+                        if (task.isSuccessful()) {
+                            if (firebaseAuth.getCurrentUser().getEmail() == null) {
                                 progressDialog.dismiss();
                                 Toast.makeText(getApplicationContext(), "Invalid Number!", Toast.LENGTH_SHORT).show();
                                 firebaseAuth.signOut();
                             } else {
-                                if(firebaseAuth.getCurrentUser().getEmail().isEmpty()){
+                                if (firebaseAuth.getCurrentUser().getEmail().isEmpty()) {
                                     progressDialog.dismiss();
                                     Toast.makeText(getApplicationContext(), "Invalid Number!", Toast.LENGTH_SHORT).show();
                                     firebaseAuth.signOut();
@@ -529,7 +656,7 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             progressDialog.dismiss();
-                                            if(task.isSuccessful()){
+                                            if (task.isSuccessful()) {
                                                 firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("password").addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -543,8 +670,37 @@ public class LoginActivity extends AppCompatActivity {
                                                         editor.putString("password", password);
                                                         editor.commit();
 
-                                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                                        finish();
+                                                        if (firebaseAuth.getCurrentUser().isEmailVerified()) {
+                                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                            finish();
+                                                        } else {
+                                                            AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                            emailVerificationBuilder.setTitle("Email Not Verified!");
+                                                            emailVerificationBuilder.setMessage("Verify your email to login. Would you like to receive another verification email?");
+                                                            emailVerificationBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(final DialogInterface dialog, int which) {
+                                                                    firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+//                                                                            Toast.makeText(LoginActivity.this, "Verification email sent @ " + firebaseAuth.getCurrentUser().getEmail(), Toast.LENGTH_SHORT).show();
+                                                                            firebaseAuth.signOut();
+                                                                            dialog.dismiss();
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
+                                                            emailVerificationBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    dialog.dismiss();
+                                                                }
+                                                            });
+                                                            AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                            emailVerificationDialog.show();
+                                                        }
+
+
                                                     }
 
                                                     @Override
@@ -569,15 +725,15 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private boolean phoneNumValidation(String phoneNum){
+    private boolean phoneNumValidation(String phoneNum) {
         boolean isValid = true;
 
-        if(phoneNum.length() != 10){
+        if (phoneNum.length() != 10) {
             isValid = false;
         }
 
-        for(int i = 0; i < phoneNum.length(); i++){
-            if((phoneNum.charAt(i) > '9') && (phoneNum.charAt(i) < '0')){
+        for (int i = 0; i < phoneNum.length(); i++) {
+            if ((phoneNum.charAt(i) > '9') && (phoneNum.charAt(i) < '0')) {
                 isValid = false;
             }
         }
