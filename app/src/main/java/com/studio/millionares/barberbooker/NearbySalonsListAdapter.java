@@ -18,7 +18,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class NearbySalonsListAdapter extends RecyclerView.Adapter<NearbySalonsListAdapter.NearbySalonsListViewHolder> {
 
-
+    /*RECYCLER VIEW ADAPTER FOR HomeActivity NearbySalonsList*/
 
     ArrayList<Salon> allNearbySalons;
     Context context;

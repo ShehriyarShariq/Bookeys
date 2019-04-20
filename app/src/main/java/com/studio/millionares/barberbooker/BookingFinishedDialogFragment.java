@@ -16,6 +16,10 @@ import java.util.HashMap;
 
 public class BookingFinishedDialogFragment extends DialogFragment {
 
+    /*
+        CUSTOM DIALOG FOR SHOWING AT COMPLETION OF BOOKING
+    */
+
     private CardView cancelBtn, goToBookingBtn;
 
     private Activity activity;
@@ -40,6 +44,8 @@ public class BookingFinishedDialogFragment extends DialogFragment {
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Restart SalonDetailsActivity to refresh data
+
                 getDialog().dismiss();
                 Intent restartIntent = new Intent(activity, SalonBookingDetailsActivity.class);
                 restartIntent.putExtra("id", salonBasicDetails.get("id").toString());
@@ -55,6 +61,8 @@ public class BookingFinishedDialogFragment extends DialogFragment {
         goToBookingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Goto MyAppointments activity
+
                 startActivity(new Intent(activity, MyAppointmentsActivity.class));
                 getDialog().dismiss();
                 activity.finish();

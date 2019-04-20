@@ -18,6 +18,10 @@ import com.google.android.gms.tasks.Task;
 
 public class TrackingService extends Service {
 
+    /*
+        GPS TRACKING SERVICE FOR CURRENT LOCATION
+    */
+
     public TrackingService() {
     }
 
@@ -37,10 +41,10 @@ public class TrackingService extends Service {
     private void requestLocationUpdates(){
         LocationRequest locationRequest = new LocationRequest();
 
+        // Instant update
         locationRequest.setInterval(0);
         locationRequest.setFastestInterval(0);
         locationRequest.setSmallestDisplacement(0);
-
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
@@ -52,15 +56,11 @@ public class TrackingService extends Service {
                 public void onComplete(@NonNull Task<Location> task) {
                     if (task.isSuccessful() && task.getResult() != null) {
                         Location lastLocation = task.getResult();
+                        Intent currentLocationIntent = new Intent("locationInfo");
+                        currentLocationIntent.putExtra("latitude", String.valueOf(lastLocation.getLatitude()));
+                        currentLocationIntent.putExtra("longitude", String.valueOf(lastLocation.getLongitude()));
 
-                        //if(lastLocation != null){
-
-                            Intent currentLocationIntent = new Intent("locationInfo");
-                            currentLocationIntent.putExtra("latitude", String.valueOf(lastLocation.getLatitude()));
-                            currentLocationIntent.putExtra("longitude", String.valueOf(lastLocation.getLongitude()));
-
-                            LocalBroadcastManager.getInstance(TrackingService.this).sendBroadcast(currentLocationIntent);
-                        //}
+                        LocalBroadcastManager.getInstance(TrackingService.this).sendBroadcast(currentLocationIntent);
                     }
                 }
             });

@@ -38,10 +38,12 @@ public class MyAppointmentsActivity extends AppCompatActivity {
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
 
+        // Initialize Views
         toolbar = findViewById(R.id.toolbar);
         tabLayout = findViewById(R.id.tab_layout);
         currentAndPastAppointmentsPager = findViewById(R.id.current_and_past_appointments_pager);
 
+        // Update toolbar
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -56,11 +58,12 @@ public class MyAppointmentsActivity extends AppCompatActivity {
         currentBookings = new ArrayList<>();
         pastBookings = new ArrayList<>();
 
+        // Get Customer Current and Past Bookings
         firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot customerDetails : dataSnapshot.getChildren()){
-                    if(customerDetails.getKey().equals("bookingsHistory")){
+                    if(customerDetails.getKey().equals("bookingsHistory")){ // Past Bookings
                         for(DataSnapshot pastBooking : customerDetails.getChildren()){
                             if(!pastBooking.getKey().equals("bookingID")){
                                 final ArrayList<HashMap<String, String>> servicesAvailed = new ArrayList<>();
@@ -121,7 +124,7 @@ public class MyAppointmentsActivity extends AppCompatActivity {
                                 });
                             }
                         }
-                    } else if(customerDetails.getKey().equals("currentBooking")){
+                    } else if(customerDetails.getKey().equals("currentBooking")){ // Current Bookings
                         for(DataSnapshot currentBooking : customerDetails.getChildren()){
                             if(!currentBooking.getKey().equals("bookingID")){
                                 final ArrayList<HashMap<String, String>> servicesAvailed = new ArrayList<>();
@@ -188,6 +191,7 @@ public class MyAppointmentsActivity extends AppCompatActivity {
 
                 loaderDialog.hideDialog();
 
+                // Appointments Pager Adapter
                 currentAndPastAppointmentsPager.setAdapter(new CurrentAndPastBookingsPagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount(), currentBookings, pastBookings));
 
                 currentAndPastAppointmentsPager.setCurrentItem(0);

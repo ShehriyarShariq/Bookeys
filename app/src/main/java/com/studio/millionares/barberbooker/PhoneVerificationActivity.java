@@ -48,6 +48,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone_verification);
 
+        // Initialize Views
         codeErrorLayout = findViewById(R.id.code_error_layout);
         focusDeflectionView = findViewById(R.id.focus_deflection_view);
 
@@ -70,6 +71,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
         phoneNum = getIntent().getStringExtra("phoneNum");
 
         if(getIntent().getStringExtra("from").equals("signUp")){
+            // Email and Password of customer
             isFromSignUpFrag = true;
             userID = getIntent().getStringExtra("userID");
             username = getIntent().getStringExtra("username");
@@ -79,6 +81,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
             isFromSignUpFrag = false;
         }
 
+        // Send OTP at provided phone number
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 phoneNum,
                 120,
@@ -87,6 +90,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
                 mCallback
         );
 
+        // For input views
         final EditText[] codeDigInputs = {firstDigitInp, secondDigitInp, thirdDigitInp, fourthDigitInp, fifthDigitInp, sixthDigitInp};
 
         final HashMap<EditText, CardView> inpToCardMap = new HashMap<>();
@@ -97,8 +101,10 @@ public class PhoneVerificationActivity extends AppCompatActivity {
         inpToCardMap.put(fifthDigitInp, fifthDigitInpCard);
         inpToCardMap.put(sixthDigitInp, sixthDigitInpCard);
 
+        // Original color of input box
         final ColorStateList cardOriginalColor = firstDigitInpCard.getCardBackgroundColor();
 
+        // Change color of selected input box
         for(final EditText digInp : codeDigInputs){
             if(digInp.getOnFocusChangeListener() == null){
                 digInp.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -114,6 +120,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
             }
         }
 
+        // Automatically change focus of input box when filled
         for(int i = 0; i < codeDigInputs.length - 1; i++){
             final int finalI = i;
 
@@ -148,6 +155,7 @@ public class PhoneVerificationActivity extends AppCompatActivity {
 
         }
 
+        // Last box
         codeDigInputs[codeDigInputs.length - 1].addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -156,12 +164,14 @@ public class PhoneVerificationActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Remove all focus
                 codeDigInputs[codeDigInputs.length - 1].clearFocus();
                 focusDeflectionView.requestFocus();
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+                // Verify entered code
                 String code = "";
                 for(EditText digInp : codeDigInputs){
                     if(!digInp.getText().toString().isEmpty()){
@@ -179,7 +189,13 @@ public class PhoneVerificationActivity extends AppCompatActivity {
         resendCodeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                        phoneNum,
+                        120,
+                        TimeUnit.SECONDS,
+                        PhoneVerificationActivity.this,
+                        mCallback
+                );
             }
         });
 
@@ -199,13 +215,10 @@ public class PhoneVerificationActivity extends AppCompatActivity {
                     verifyCode(smsCode);
                 } else {
                     Toast.makeText(getApplicationContext(), "02Error", Toast.LENGTH_SHORT).show();
-                    codeErrorLayout.setVisibility(View.VISIBLE);
                 }
 
             } else {
                 codeErrorLayout.setVisibility(View.VISIBLE);
-                Toast.makeText(getApplicationContext(), "01Error", Toast.LENGTH_SHORT).show();
-
             }
         } else {
             codeErrorLayout.setVisibility(View.VISIBLE);

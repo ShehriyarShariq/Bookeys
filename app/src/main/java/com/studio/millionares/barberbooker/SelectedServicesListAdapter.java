@@ -11,6 +11,10 @@ import java.util.ArrayList;
 
 public class SelectedServicesListAdapter extends RecyclerView.Adapter<SelectedServicesListAdapter.SelectedServicesListViewHolder> {
 
+    /*
+        RECYCLER VIEW ADAPTER FOR SelectedServicesList IN SalonBookingDetailsActivity
+    */
+
     ArrayList<Service> allSelectedServices;
 
     public SelectedServicesListAdapter(ArrayList<Service> allSelectedServices) {

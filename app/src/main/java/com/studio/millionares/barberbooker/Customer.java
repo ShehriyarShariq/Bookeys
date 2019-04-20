@@ -17,7 +17,7 @@ public class Customer {
         this.imgLink = imgLink;
     }
 
-    // For initializing a customer
+    // FOR INITIALIZING A CUSTOMER AT SIGNUP
     // This is not accessed later since all needed data is fetched in real-time
     public HashMap<String, Object> getCustomerMap(){
         HashMap<String, Object> customerMap = new HashMap<>();

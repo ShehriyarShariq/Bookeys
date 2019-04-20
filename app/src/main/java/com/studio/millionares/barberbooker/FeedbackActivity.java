@@ -18,6 +18,10 @@ import java.util.HashMap;
 
 public class FeedbackActivity extends AppCompatActivity {
 
+    /*
+        CUSTOMER FEEDBACK ACTIVITY
+    */
+
     Toolbar toolbar;
     EditText complaintTitle, complaintContent;
     CardView sendBtn;
@@ -30,6 +34,7 @@ public class FeedbackActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feedback);
 
+        // Initialize Views
         toolbar = findViewById(R.id.toolbar);
         complaintTitle = findViewById(R.id.complaint_title);
         complaintContent = findViewById(R.id.complaint_content);
@@ -38,11 +43,13 @@ public class FeedbackActivity extends AppCompatActivity {
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
 
+        // Update toolbar
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        // Send feedback
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

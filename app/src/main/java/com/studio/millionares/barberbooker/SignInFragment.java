@@ -14,6 +14,10 @@ import android.widget.TextView;
 
 public class SignInFragment extends Fragment {
 
+    /*
+        SIGNIN
+    */
+
     RelativeLayout emailLayout, passwordLayout;//, phoneNumLayout;
     EditText email, password ;//phoneNum
     TextView forgotPassword;

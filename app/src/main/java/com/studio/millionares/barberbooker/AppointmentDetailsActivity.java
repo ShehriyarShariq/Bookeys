@@ -33,7 +33,7 @@ import java.util.HashMap;
 
 public class AppointmentDetailsActivity extends AppCompatActivity {
 
-    private final static int PENALTY = 50;
+    private final static int PENALTY = 50; // Last hour cancellation reduction amount
 
     TextView salonNameTxt, bookingDateTxt, bookingTimeTxt, bookingExpectedTimeTxt, barberNameTxt, netTotalTxt, totalCostTxt;
     RecyclerView servicesList;
@@ -60,10 +60,12 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_details);
 
+        // Get selected Appointment data from previous activity
         Intent appointmentIntent = getIntent();
         Appointment appointment = appointmentIntent.getParcelableExtra("appointment");
         HashMap<String, Object> appointmentDetails = appointment.getAppointmentDetails();
 
+        // Views Initialization
         salonNameTxt = findViewById(R.id.heading_label);
         bookingDateTxt = findViewById(R.id.booking_date);
         bookingTimeTxt = findViewById(R.id.booking_time);
@@ -73,21 +75,23 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         cancelBookingButton = findViewById(R.id.cancel_booking_btn);
         contactBtn = findViewById(R.id.contact_btn);
         netTotalTxt = findViewById(R.id.net_total);
-        totalCostTxt  = findViewById(R.id.total_cost);
+        totalCostTxt = findViewById(R.id.total_cost);
 
+        // Opening web socket to receive actual current time and date
         try {
-            mSocket = IO.socket("https://bookies14.herokuapp.com/");
+            mSocket = IO.socket("https://bookies14.herokuapp.com/"); // @ url of hosted server
         } catch (URISyntaxException e) {
         }
 
+        // Check if connected to the websocket
         if (savedInstanceState != null) {
             hasConnection = savedInstanceState.getBoolean("hasConnection");
         }
 
+        // If websocket not opened
         if (!hasConnection) {
-
             mSocket.connect();
-            mSocket.on("dateAndTime", getTrueDateTime);
+            mSocket.on("dateAndTime", getTrueDateTime); // Listen for dateAndTime emit from the server
         }
 
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
@@ -95,7 +99,6 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
 
         salonName = appointmentDetails.get("salonName").toString();
         totalCost = Integer.parseInt(appointmentDetails.get("amount").toString());
-
         //appointmentDetails.get("rating");
         //appointmentDetails.get("review");
         barberID = appointmentDetails.get("barberID").toString();
@@ -107,32 +110,39 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         contactNumStr = appointmentDetails.get("contactNum").toString();
         amount = appointmentDetails.get("amount").toString();
 
-        // 88:88 PM on 25-03-2019
-        bookingStartTime = getDateAndTime(appointmentDetails.get("dateAndTime").toString())[0];
-        bookingDate = getDateAndTime(appointmentDetails.get("dateAndTime").toString())[1];
-        startTimeAmOrPm = (appointmentDetails.get("dateAndTime").toString()).indexOf("AM") >= 0 ?
-                (appointmentDetails.get("dateAndTime").toString()).substring((appointmentDetails.get("dateAndTime").toString()).indexOf("AM"), (appointmentDetails.get("dateAndTime").toString()).indexOf("AM") + 2) :
-                (appointmentDetails.get("dateAndTime").toString()).substring((appointmentDetails.get("dateAndTime").toString()).indexOf("PM"), (appointmentDetails.get("dateAndTime").toString()).indexOf("PM") + 2)
-        ;
+        // HH:MM AM/PM on DD-mm-YYYY
+        // Appointment timing
+        String dateAndTime = appointmentDetails.get("dateAndTime").toString();
+        bookingStartTime = getDateAndTime(dateAndTime)[0];
+        bookingDate = getDateAndTime(dateAndTime)[1];
+
+        // Get Time string suffix
+        int timeSuffixStartIndex = (dateAndTime).indexOf("AM") >= 0 ? dateAndTime.indexOf("AM") : dateAndTime.indexOf("PM");
+        startTimeAmOrPm = dateAndTime.substring(timeSuffixStartIndex, timeSuffixStartIndex + 2);
+
+        // Get end time based on start time of appointment
         bookingEndTime = addTimeStrings(bookingStartTime, getAllServicesTotalTime(servicesAvailed));
 
+        // Update views
         salonNameTxt.setText(salonName);
         bookingDateTxt.setText(bookingDate);
         bookingTimeTxt.setText(bookingStartTime + " to " + bookingEndTime);
         netTotalTxt.setText("R.s " + amount + "/-");
         totalCostTxt.setText("R.s " + amount + "/-");
+        barberNameTxt.setText(barberName);
 
+        // Get and set appointment expected time of completion
         String[] servicesTotalTimeSplit = getAllServicesTotalTime(servicesAvailed).split(":");
         String expectedTimeFinal = Integer.parseInt(servicesTotalTimeSplit[0]) > 0 ? servicesTotalTimeSplit[0] + " hour " + servicesTotalTimeSplit[1] + " min" : servicesTotalTimeSplit[1] + " min";
         bookingExpectedTimeTxt.setText(expectedTimeFinal);
 
-        barberNameTxt.setText(barberName);
-
+        // Get all appointment services
         ArrayList<Service> allServices = new ArrayList<>();
-        for(HashMap<String, String> service : servicesAvailed){
+        for (HashMap<String, String> service : servicesAvailed) {
             allServices.add(new Service(service));
         }
 
+        // Services List LayoutManager and Adapter
         servicesList.setHasFixedSize(true);
         LinearLayoutManager servicesListLinearLayoutManager = new LinearLayoutManager(AppointmentDetailsActivity.this);
         servicesList.setLayoutManager(servicesListLinearLayoutManager);
@@ -140,11 +150,10 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         SelectedServicesListAdapter selectedServicesListAdapter = new SelectedServicesListAdapter(allServices);
         servicesList.setAdapter(selectedServicesListAdapter);
 
-        LoaderDialog appointmentLoader = new LoaderDialog(AppointmentDetailsActivity.this, "InfoLoader");
-
         contactBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Dialer intent with phone number of salon
                 Uri phoneNumStrURI = Uri.parse("tel:+92" + contactNumStr);
                 Intent phoneDialer = new Intent(Intent.ACTION_DIAL, phoneNumStrURI);
                 startActivity(phoneDialer);
@@ -154,12 +163,15 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         cancelBookingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // If current date has been fetched
                 if (currentDate != null) {
-                    if (bookingDate.equals(currentDate)) {
+                    if (bookingDate.equals(currentDate)) { // Current date
                         int currentHour = Integer.parseInt((currentTime.split(":"))[0]);
                         int bookingHour = Integer.parseInt((bookingStartTime.split(":"))[0]);
 
+                        // If within 1 hour of start of appointment
                         if ((bookingHour - currentHour) == 1) {
+                            // Cancellation confirmation dialog
                             AlertDialog.Builder builder = new AlertDialog.Builder(AppointmentDetailsActivity.this);
                             builder.setTitle("Are You Sure?");
                             builder.setMessage("Cancelling would result in a reduction of R.s.50 from your wallet. Press Ok to proceed.");
@@ -169,19 +181,24 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                                     final LoaderDialog cancellationProcess = new LoaderDialog(AppointmentDetailsActivity.this, "Process");
                                     cancellationProcess.showDialog();
 
+                                    // Get current wallet amount
                                     firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("wallet").addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                             int walletAmount = Integer.parseInt(dataSnapshot.getValue().toString());
                                             walletAmount -= PENALTY;
                                             final int finalWalletAmount = walletAmount;
+
+                                            // Set updated wallet amount
                                             firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("wallet").setValue(walletAmount).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if (task.isSuccessful()) {
+                                                        // Remove appointment from customer's appointments
                                                         firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("currentBooking").child(bookingID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
+                                                                // Update salon appointments
                                                                 firebaseDatabase.child("Salons").child(salonID).child("bookedTimeSlots").child(bookingID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                     @Override
                                                                     public void onComplete(@NonNull Task<Void> task) {
@@ -201,7 +218,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                                                                 });
                                                             }
                                                         });
-                                                    } else {
+                                                    } else { // If updating wallet amount failed
                                                         firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("wallet").setValue(finalWalletAmount + PENALTY).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
@@ -230,7 +247,8 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                             AlertDialog alertDialog = builder.create();
                             alertDialog.show();
                         }
-                    } else {
+                    } else { // Date before the day of appointment
+                        // Cancellation confirmation dialog
                         AlertDialog.Builder builder = new AlertDialog.Builder(AppointmentDetailsActivity.this);
                         builder.setTitle("Are You Sure?");
                         builder.setMessage("Press Ok to proceed or press Cancel to go back.");
@@ -240,9 +258,11 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                                 final LoaderDialog cancellationProcess = new LoaderDialog(AppointmentDetailsActivity.this, "Process");
                                 cancellationProcess.showDialog();
 
+                                // Remove appointment from customer's appointments
                                 firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("currentBooking").child(bookingID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
+                                        // Update salon appointments
                                         firebaseDatabase.child("Salons").child(salonID).child("bookedTimeSlots").child(bookingID).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
@@ -269,13 +289,14 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
                         AlertDialog alertDialog = builder.create();
                         alertDialog.show();
                     }
-                } else {
+                } else { // If current date has yet to be fetched
                     Toast.makeText(AppointmentDetailsActivity.this, "Please try again in a few seconds...", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
+    // Listener for dateAndTime from server
     Emitter.Listener getTrueDateTime = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -300,6 +321,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         }
     };
 
+    // Get index of String in String array
     private int getIndexOf(String[] array, String str) {
         for (int i = 0; i < array.length; i++) {
             if (array[i].equalsIgnoreCase(str)) {
@@ -309,16 +331,25 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         return -1;
     }
 
+    //
     private String[] getDateAndTime(String dateTimeStr) {
-        // Sample: HH:mm PM on dd-MM-yyyy
-        String spacesRemovedStr = dateTimeStr.replace(" ", "");
+        // Sample: HH:mm AM/PM on dd-MM-yyyy
+        String spacesRemovedStr = dateTimeStr.replace(" ", ""); // Remove all spaces
+
+        // Remove AM or PM from date and time String
         String AmOrPmRemoved = (spacesRemovedStr.replace("AM", "")).equals(spacesRemovedStr) ? spacesRemovedStr.replace("PM", "") : spacesRemovedStr.replace("AM", "");
+
+        // Split String with "on"
+        // 0 - Time
+        // 1 - Date
         String[] dateAndTimeSplit = AmOrPmRemoved.split("on");
 
         return dateAndTimeSplit;
     }
 
+    // Add two valid timeString
     private String addTimeStrings(String timeStamp1, String timeStamp2) {
+        // Eg timeStamp --> HH:mm
         int timeStamp1Hours = Integer.parseInt((timeStamp1.split(":"))[0]);
         int timeStamp1Mins = Integer.parseInt((timeStamp1.split(":"))[1]);
         int timeStamp2Hours = Integer.parseInt((timeStamp2.split(":"))[0]);
@@ -338,6 +369,7 @@ public class AppointmentDetailsActivity extends AppCompatActivity {
         for (HashMap<String, String> service : servicesAvailed) {
             String expectedTime = service.get("expectedTime");
             int hours = 0, mins = 0;
+            // Parse total time of services
             if (expectedTime.indexOf("H") >= 0) {
                 hours = Integer.parseInt(expectedTime.substring(0, expectedTime.indexOf("H")));
                 mins = Integer.parseInt(expectedTime.substring(expectedTime.indexOf("H") + 1, expectedTime.indexOf("M")));

@@ -9,10 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
 
@@ -22,11 +18,11 @@ import java.util.ArrayList;
  */
 public class SalonServicesFragment extends Fragment {
 
-    RecyclerView servicesList;
-    ProgressBar servicesLoader;
+    /*
+        SALON SERVICES LIST
+    */
 
-    DatabaseReference firebaseDatabase;
-    FirebaseAuth firebaseAuth;
+    RecyclerView servicesList;
 
     private Salon salon;
 

@@ -8,6 +8,10 @@ import java.util.ArrayList;
 
 public class CurrentAndPastBookingsPagerAdapter extends FragmentStatePagerAdapter {
 
+    /*
+        VIEWPAGER ADAPTER FOR MyAppointments ACTIVITY
+    */
+
     private int numOfTabs;
     private ArrayList<Appointment> currentBookings, pastBookings;
 

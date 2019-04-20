@@ -18,6 +18,10 @@ import java.util.ArrayList;
  */
 public class PastAppointmentsFragment extends Fragment {
 
+    /*
+        FRAGMENT FOR PAST APPOINTMENTS LIST
+    */
+
     private ArrayList<Appointment> pastBookings;
 
     RecyclerView pastBookingsList;

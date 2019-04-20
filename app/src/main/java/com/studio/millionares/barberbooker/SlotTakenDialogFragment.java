@@ -16,6 +16,10 @@ import java.util.HashMap;
 
 public class SlotTakenDialogFragment extends DialogFragment {
 
+    /*
+        CUSTOM DIALOG TO INDICATE INVALID SELECTED TIME
+    */
+
     private CardView okBtn;
 
     private Activity activity;

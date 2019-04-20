@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 public class SalonProfilePagerAdapter extends FragmentStatePagerAdapter {
 
+    /*VIEWPAGER ADAPTER FOR SalonBookingDetailsActivity*/
+
     private int numOfTabs;
     private Salon salon;
 

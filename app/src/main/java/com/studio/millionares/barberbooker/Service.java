@@ -5,6 +5,10 @@ import java.util.HashMap;
 
 public class Service {
 
+    /*
+        SERVICE OBJECT DEFINITION
+    */
+
     private String id, serviceName, cost, expectedTime;
     ArrayList<String> barbers;
 

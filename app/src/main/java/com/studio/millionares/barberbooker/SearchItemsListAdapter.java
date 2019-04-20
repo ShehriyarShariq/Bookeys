@@ -12,6 +12,10 @@ import java.util.HashMap;
 
 public class SearchItemsListAdapter extends RecyclerView.Adapter<SearchItemsListAdapter.SearchItemsListViewHolder> {
 
+    /*
+        RECYCLER VIEW FOR SearchBarList IN HomeActivity
+    */
+
     private final SearchItemsRecyclerViewListClickListener searchItemsRecyclerViewListClickListener;
     ArrayList<Salon> allSalons;
 

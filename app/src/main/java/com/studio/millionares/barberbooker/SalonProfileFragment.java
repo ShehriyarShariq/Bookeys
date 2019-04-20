@@ -13,6 +13,9 @@ import android.view.ViewGroup;
  */
 public class SalonProfileFragment extends Fragment {
 
+    /*
+        SALON PROFILE
+    */
 
     public SalonProfileFragment() {
         // Required empty public constructor

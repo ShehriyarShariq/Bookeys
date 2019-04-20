@@ -10,6 +10,10 @@ import java.util.HashMap;
 
 public class AllSaloonsBasicDetailsDatabase extends SQLiteOpenHelper {
 
+    /*
+        NOT BEING USED CURRENTLY
+    */
+
     private final static String TAG = "allSaloonsBasicDetailsDatabase";
 
     private final static String DATABASE_NAME = "AllSaloonsBasicDetailsDatabase";

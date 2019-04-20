@@ -15,6 +15,10 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
+    /*
+        ACTIVITY FOR RESETTING PASSWORD
+    */
+
     android.support.v7.widget.Toolbar toolbar;
     EditText emailInput;
     RelativeLayout nextBtnLayout;

@@ -19,6 +19,10 @@ import java.util.ArrayList;
  */
 public class CurrentAppointmentsFragment extends Fragment {
 
+    /*
+        FRAGMENT FOR CURRENT APPOINTMENTS LIST
+    */
+
     private ArrayList<Appointment> currentBookings;
     CurrentAppointmentsListAdapter currentAppointmentsListAdapter;
 
@@ -44,6 +48,7 @@ public class CurrentAppointmentsFragment extends Fragment {
         LinearLayoutManager currentBookingsListLinearLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
         currentBookingsList.setLayoutManager(currentBookingsListLinearLayoutManager);
 
+        // If a current appointment is clicked
         currentAppointmentsListAdapter = new CurrentAppointmentsListAdapter("current", currentBookings, new AppointmentsRecyclerViewListClickListener() {
             @Override
             public void AppointmentListOnClick(Appointment appointment) {

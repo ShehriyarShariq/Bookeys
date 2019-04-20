@@ -34,12 +34,13 @@ import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
 
+    // REQUEST CODES
     private final int SIGNUP_VERIFICATION_REQ = 104;
     private final int SIGNIN_VERIFICATION_REQ = 204;
 
     ViewPager loginPager;
-    CardView continueBtn;
     TabLayout tabLayout;
+    CardView continueBtn;
 
     LoginPagerAdapter loginPagerAdapter;
 
@@ -76,11 +77,11 @@ public class LoginActivity extends AppCompatActivity {
         loginPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         // For first page initially
-        if (loginPager.getCurrentItem() == 0) {
+        if (loginPager.getCurrentItem() == 0) { // SIGN IN Page
             continueBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    // Initialize Views
                     final View view = loginPager.getChildAt(0);
                     final EditText email = view.findViewById(R.id.email_input);
 //                    final EditText phoneNum = view.findViewById(R.id.phone_number_input);
@@ -117,8 +118,11 @@ public class LoginActivity extends AppCompatActivity {
                                                                 }
                                                             }
 
+                                                            // Check if email verified
                                                             if (!firebaseAuth.getCurrentUser().isEmailVerified()) {
                                                                 progressDialog.dismiss();
+
+                                                                // Dialog for notification of email sent
                                                                 AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
                                                                 emailVerificationBuilder.setTitle("Email Not Verified!");
                                                                 emailVerificationBuilder.setMessage("Verify your email to login. Would you like to receive another verification email?");
@@ -147,6 +151,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                 progressDialog.dismiss();
                                                                 loginError.setVisibility(View.INVISIBLE);
 
+                                                                // Store email and password locally for future instant login
                                                                 SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
                                                                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -154,9 +159,10 @@ public class LoginActivity extends AppCompatActivity {
                                                                 editor.putString("password", password.getText().toString());
                                                                 editor.commit();
 
-                                                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                                                 finish();
 
+//                                                                // Phone Number verification check
 //                                                                if (isPhoneNumVerified.equals("false")) { // Phone number not validated
 //                                                                    progressDialog.dismiss();
 //                                                                    loginError.setVisibility(View.INVISIBLE);
@@ -181,7 +187,7 @@ public class LoginActivity extends AppCompatActivity {
 //                                                                    editor.putString("password", password.getText().toString());
 //                                                                    editor.commit();
 //
-//                                                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                                                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
 //                                                                    finish();
 //                                                                }
                                                             }
@@ -263,6 +269,7 @@ public class LoginActivity extends AppCompatActivity {
                         continueBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                // Initialize Views
                                 final View view = loginPager.getChildAt(0);
                                 final EditText email = view.findViewById(R.id.email_input);
 //                                final EditText phoneNum = view.findViewById(R.id.phone_number_input);
@@ -299,6 +306,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                             }
                                                                         }
 
+                                                                        // Check if email verified
                                                                         if (!firebaseAuth.getCurrentUser().isEmailVerified()) {
                                                                             progressDialog.dismiss();
                                                                             AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
@@ -337,8 +345,10 @@ public class LoginActivity extends AppCompatActivity {
                                                                             editor.putString("password", password.getText().toString());
                                                                             editor.commit();
 
-                                                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                                                             finish();
+
+//                                                                            // Phone Number verification
 //                                                                            if (isPhoneNumVerified.equals("false")) { // Phone number not validated
 //                                                                                progressDialog.dismiss();
 //                                                                                loginError.setVisibility(View.INVISIBLE);
@@ -363,7 +373,7 @@ public class LoginActivity extends AppCompatActivity {
 //                                                                                editor.putString("password", password.getText().toString());
 //                                                                                editor.commit();
 //
-//                                                                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+//                                                                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
 //                                                                                finish();
 //                                                                            }
                                                                         }
@@ -477,6 +487,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                 @Override
                                                                 public void onComplete(@NonNull Task<Void> task) {
                                                                     if (task.isSuccessful()) {
+//                                                                        // Phone Number verification activity
 //                                                                        Intent verificationActivity = new Intent(LoginActivity.this, PhoneVerificationActivity.class);
 //                                                                        Bundle phoneNumberCarrier = new Bundle();
 //                                                                        phoneNumberCarrier.putString("from", "signUp");
@@ -598,7 +609,7 @@ public class LoginActivity extends AppCompatActivity {
                                     editor.commit();
 
                                     if (firebaseAuth.getCurrentUser().isEmailVerified()) {
-                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                         finish();
                                     } else {
                                         AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
@@ -671,7 +682,7 @@ public class LoginActivity extends AppCompatActivity {
                                                         editor.commit();
 
                                                         if (firebaseAuth.getCurrentUser().isEmailVerified()) {
-                                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                                             finish();
                                                         } else {
                                                             AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
@@ -725,6 +736,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    // Validating provided phone number
     private boolean phoneNumValidation(String phoneNum) {
         boolean isValid = true;
 

@@ -12,6 +12,10 @@ import java.util.HashMap;
 
 public class SalonServicesListAdapter extends RecyclerView.Adapter<SalonServicesListAdapter.SalonServicesListViewHolder> {
 
+    /*
+        RECYCLER VIEW ADAPTER FOR ServicesList
+    */
+
     ArrayList<Service> allServices;
 
     public SalonServicesListAdapter(ArrayList<Service> allServices) {

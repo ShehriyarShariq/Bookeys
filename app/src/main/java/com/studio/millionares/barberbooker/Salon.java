@@ -7,6 +7,10 @@ import java.util.HashMap;
 
 public class Salon {
 
+    /*
+        SALON OBJECT CLASS DEFINITION
+    */
+
     private String salonID, name, imageURL, city, rating, address, salonDescription;
     private LatLng location;
     private ArrayList<Service> allProvidedServices;
@@ -27,6 +31,7 @@ public class Salon {
     }
 
     public Salon(String salonID, ArrayList<Service> allProvidedServices, ArrayList<Barber> allBarbers, ArrayList<HashMap<String, String>> bookedTimeSlots, ArrayList<String> closedDays, HashMap<String, Object> workingHoursAndDays, String salonDescription, ArrayList<Review> reviews){
+        this.salonID = salonID;
         this.allProvidedServices = allProvidedServices;
         this.allBarbers = allBarbers;
         this.bookedTimeSlots = bookedTimeSlots;
@@ -55,6 +60,7 @@ public class Salon {
     public HashMap<String, Object> getSalonBookingDetails(){
         HashMap<String, Object> salonBookingDetails = new HashMap<>();
 
+        salonBookingDetails.put("id", salonID);
         salonBookingDetails.put("allServices", allProvidedServices);
         salonBookingDetails.put("allBarbers", allBarbers);
         salonBookingDetails.put("bookedTimeSlots", bookedTimeSlots);

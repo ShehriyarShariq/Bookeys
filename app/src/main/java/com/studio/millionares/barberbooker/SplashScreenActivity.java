@@ -16,6 +16,12 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
+    /*
+        SPLASH SCREEN
+    */
+    // Changes based on if user already logged in or not
+
+
     private DatabaseReference firebaseDatabase;
     private FirebaseAuth firebaseAuth;
 
@@ -40,45 +46,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (task.isSuccessful()) {
-                            /*firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("salonUpdates").addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    boolean isUpdateAvailable = false;
-
-                                    for(DataSnapshot salonID : dataSnapshot.getChildren()){
-                                        if(salonID.getKey().equals("salonID")){
-                                            continue;
-                                        }
-
-                                        isUpdateAvailable = true;
-                                    }
-
-                                    if(isUpdateAvailable){
-                                        firebaseDatabase.child("Salons").addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-                                    } else {
-                                        startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
-                                        finish();
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });*/
-
                         if(firebaseAuth.getCurrentUser().isEmailVerified()){
-                            startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+                            startActivity(new Intent(SplashScreenActivity.this, HomeActivity.class));
                             finish();
                         } else {
                             startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));

@@ -4,6 +4,10 @@ import java.util.HashMap;
 
 public class Review {
 
+    /*
+        REVIEW OBJECT CLASS DEFINITION
+    */
+
     private String reviewerName, reviewMsg, dateOfMsg, rating;
 
     public Review(HashMap<String, String> reviewDetails){

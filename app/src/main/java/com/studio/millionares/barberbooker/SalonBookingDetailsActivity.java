@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -50,25 +51,29 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-public class SalonBookingDetailsActivity extends AppCompatActivity{
+public class SalonBookingDetailsActivity extends AppCompatActivity {
 
-    android.support.v7.widget.Toolbar toolbar;
-    TabLayout tabLayout;
-    ViewPager viewPager;
-    CardView makeBookingBtn, cancelBtn, nextBtn, finishBookingBtn, datePickerBtn, timePickerBtn;
-    RelativeLayout headerLayout, originalLayout, bookingLayout, servicesSelectionLayout, datePicker, timePicker, getDirectionsBtnLayout;
-    ScrollView timeSelectionLayout, barberSelectionLayout, finalReceiptLayout;
-    TextView salonName, salonPlaceHolderName, salonRating, bookingDate, bookingTime, expectedTime, netTotal, serviceTax, totalCost, selectedDate, selectedTime, selectedBarberTxt;
-    RecyclerView bookingServicesList, availableTimeSlotsList, selectedServicesList, barberSelectionList;
-    ImageView backToServicesSelectionBtn, backToTimeSelectionBtn, backToBarberSelectionBtn;
-    LinearLayout cancelAndNextBtnLayout;
-    ImageButton addToFavouritesBtn, removeFromFavouritesBtn;
+    /*
+        SALON DETAIL AND BOOKING ACTIVITY
+    */
 
-    String salonIDStr, salonNameStr, salonRatingStr;
-    LatLng salonLocation;
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private CardView makeBookingBtn, cancelBtn, nextBtn, finishBookingBtn, datePickerBtn, timePickerBtn;
+    private RelativeLayout headerLayout, originalLayout, bookingLayout, servicesSelectionLayout, datePicker, timePicker, getDirectionsBtnLayout;
+    private ScrollView timeSelectionLayout, barberSelectionLayout, finalReceiptLayout;
+    private TextView salonName, salonPlaceHolderName, salonRating, bookingDate, bookingTime, expectedTime, netTotal, serviceTax, totalCost, selectedDate, selectedTime, selectedBarberTxt;
+    private RecyclerView bookingServicesList, availableTimeSlotsList, selectedServicesList, barberSelectionList;
+    private ImageView backToServicesSelectionBtn, backToTimeSelectionBtn, backToBarberSelectionBtn;
+    private LinearLayout cancelAndNextBtnLayout;
+    private ImageButton addToFavouritesBtn, removeFromFavouritesBtn;
 
-    DatabaseReference firebaseDatabase;
-    FirebaseAuth firebaseAuth;
+    private String salonIDStr, salonNameStr, salonRatingStr;
+    private LatLng salonLocation;
+
+    private DatabaseReference firebaseDatabase;
+    private FirebaseAuth firebaseAuth;
 
     private HashMap<String, Object> salonWorkingHoursAndDays;
     private ArrayList<HashMap<String, String>> bookedTimeSlots;
@@ -77,39 +82,39 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
     private ArrayList<Review> allReviews;
     private String salonDescription;
 
-    ArrayList<Service> allServices, tempAllServices, tempAllVisibleServices;
-    BookingServicesListAdapter bookingServicesListAdapter;
+    private ArrayList<Service> allServices, tempAllServices, tempAllVisibleServices;
+    private BookingServicesListAdapter bookingServicesListAdapter;
 
-    ArrayList<HashMap<String, String>> rawAvailableTimeSlots;
-    AvailableTimeSlotsListAdapter availableTimeSlotsListAdapter;
+    private ArrayList<HashMap<String, String>> rawAvailableTimeSlots;
+    private AvailableTimeSlotsListAdapter availableTimeSlotsListAdapter;
 
-    BarberSelectionListAdapter barberSelectionListAdapter;
+    private BarberSelectionListAdapter barberSelectionListAdapter;
 
-    int selectionTimeInMins;
+    private int selectionTimeInMins;
 
-    Salon currentSalon;
+    private Salon currentSalon;
 
-    LoaderDialog loaderDialog;
+    private LoaderDialog loaderDialog;
 
-    Calendar mCalendar;
-    String selectedBookingDate;
-    String selectedBookingStartTime, selectedBookingEndTime;
-    Barber selectedBarber;
-    ArrayList<Service> allSelectedServices;
-    ArrayList<Barber> availableSalonBarbers;
-    ArrayList<HashMap<String, String>> allBookedTimeSlots;
-    int netCost, totalCostVal;
+    private Calendar mCalendar;
+    private String selectedBookingDate;
+    private String selectedBookingStartTime, selectedBookingEndTime;
+    private Barber selectedBarber;
+    private ArrayList<Service> allSelectedServices;
+    private ArrayList<Barber> availableSalonBarbers;
+    private ArrayList<HashMap<String, String>> allBookedTimeSlots;
+    private int netCost, totalCostVal;
 
-    Activity mActivity;
+    private Activity mActivity;
 
-    int headerHeight;
+    private int headerHeight;
 
-    String currentDate, currentTime;
+    private String currentDate, currentTime;
 
     private Socket mSocket;
     private Boolean hasConnection = false;
 
-    HashMap<String, Object> salonBasicDetails;
+    private HashMap<String, Object> salonBasicDetails;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,15 +123,17 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
         mActivity = this;
 
+        // Establish websocket connection to webserver for fetching current time and date
         try {
-            mSocket = IO.socket("https://bookies14.herokuapp.com/");
-        } catch (URISyntaxException e) {}
+            mSocket = IO.socket("https://bookies14.herokuapp.com/"); // Server URL
+        } catch (URISyntaxException e) {
+        }
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             hasConnection = savedInstanceState.getBoolean("hasConnection");
         }
 
-        if(!hasConnection){
+        if (!hasConnection) {
 
             mSocket.connect();
             mSocket.on("dateAndTime", getTrueDateTime);
@@ -222,12 +229,12 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot details : dataSnapshot.getChildren()) {
-                    if(details.getKey().equals("description")){
+                    if (details.getKey().equals("description")) {
                         salonDescription = details.getValue().toString();
-                    } else if(details.getKey().equals("reviews")){
-                        for(DataSnapshot review : details.getChildren()){
+                    } else if (details.getKey().equals("reviews")) {
+                        for (DataSnapshot review : details.getChildren()) {
                             HashMap<String, String> reviewDetails = new HashMap<>();
-                            for(DataSnapshot detail : review.getChildren()){
+                            for (DataSnapshot detail : review.getChildren()) {
                                 reviewDetails.put(detail.getKey(), detail.getValue().toString());
                             }
                             allReviews.add(new Review(reviewDetails));
@@ -259,7 +266,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                         }
                     } else if (details.getKey().equals("barbers")) { // Salon barbers
                         for (DataSnapshot barber : details.getChildren()) {
-                            if(barber.getKey().equals("barberID")){ // Skip for placeholder barberID
+                            if (barber.getKey().equals("barberID")) { // Skip for placeholder barberID
                                 continue;
                             }
 
@@ -268,7 +275,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                             ArrayList<HashMap<String, String>> barberBookings = new ArrayList<>();
 
                             id = barber.getKey();
-                            for (DataSnapshot barberDetails : barber.getChildren()) {
+                            for (DataSnapshot barberDetails : barber.getChildren()) { // Barber
                                 if (barberDetails.getKey().equals("name")) { // Barber name
                                     name = barberDetails.getValue().toString();
                                 } else if (barberDetails.getKey().equals("rating")) { // Barber rating
@@ -276,15 +283,15 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 } else if (barberDetails.getKey().equals("imageURL")) { // Barber image URL
                                     imageURL = barberDetails.getValue().toString();
                                 } else if (barberDetails.getKey().equals("workingHours")) { // Barber Working Hours for all days of a week
-                                    for(DataSnapshot day : barberDetails.getChildren()){
+                                    for (DataSnapshot day : barberDetails.getChildren()) {
                                         HashMap<String, Object> dayDetailsMap = new HashMap<>();
 
-                                        for(DataSnapshot dayDetails : day.getChildren()){
-                                            if(dayDetails.getKey().equals("unavailableSlots")){ // Breaks on a certain day
+                                        for (DataSnapshot dayDetails : day.getChildren()) {
+                                            if (dayDetails.getKey().equals("unavailableSlots")) { // Breaks on a certain day
                                                 ArrayList<HashMap<String, String>> unavailableSlots = new ArrayList<>();
-                                                for(DataSnapshot slot : dayDetails.getChildren()){
+                                                for (DataSnapshot slot : dayDetails.getChildren()) {
                                                     HashMap<String, String> slotTimings = new HashMap<>();
-                                                    for(DataSnapshot timing : slot.getChildren()){
+                                                    for (DataSnapshot timing : slot.getChildren()) {
                                                         slotTimings.put(timing.getKey(), timing.getValue().toString());
                                                     }
                                                     unavailableSlots.add(slotTimings);
@@ -298,8 +305,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                         workingHours.put(day.getKey(), dayDetailsMap);
                                     }
-                                } else if(barberDetails.getKey().equals("bookedTimeSlots")){ // Barber booked time slots
-                                    for(DataSnapshot booking : barberDetails.getChildren()){
+                                } else if (barberDetails.getKey().equals("bookedTimeSlots")) { // Barber booked time slots
+                                    for (DataSnapshot booking : barberDetails.getChildren()) {
                                         HashMap<String, String> bookingTimings = new HashMap<>();
                                         bookingTimings.put("id", booking.getKey());
                                         for (DataSnapshot time : booking.getChildren()) {
@@ -454,16 +461,19 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                     @Override
                     public void barberSelectionRecyclerViewListClicked(String barberID) {
                         // Click listener for the barber selection
-                        for(Barber barber : availableSalonBarbers){
-                            if(barber.getId().equals(barberID)){
+                        // Get selected barber
+                        for (Barber barber : availableSalonBarbers) {
+                            if (barber.getId().equals(barberID)) {
                                 selectedBarber = barber;
                             }
                         }
 
-                        if(selectedBarber.getBarberDetails().get("name").equals("none")){
+                        // First available barber if AUTO was selected
+                        if (selectedBarber.getBarberDetails().get("name").equals("none")) {
                             selectedBarber = availableSalonBarbers.get(1);
                         }
 
+                        // Update view
                         barberSelectionLayout.setVisibility(View.GONE);
                         finalReceiptLayout.setVisibility(View.VISIBLE);
                         finishBookingBtn.setVisibility(View.VISIBLE);
@@ -476,6 +486,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                         SelectedServicesListAdapter selectedServicesListAdapter = new SelectedServicesListAdapter(allSelectedServices);
                         selectedServicesList.setAdapter(selectedServicesListAdapter);
 
+                        // Calculate costs
                         netCost = 0;
                         for (Service service : allSelectedServices) {
                             netCost += Double.parseDouble(service.getServiceDetails().get("cost").toString());
@@ -513,6 +524,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                         removeFromFavouritesBtn.setVisibility(View.VISIBLE);
                         addToFavouritesBtn.setVisibility(View.GONE);
+
+                        Toast.makeText(SalonBookingDetailsActivity.this, "COMING SOON...", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -523,6 +536,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                         addToFavouritesBtn.setVisibility(View.VISIBLE);
                         removeFromFavouritesBtn.setVisibility(View.GONE);
+
+                        Toast.makeText(SalonBookingDetailsActivity.this, "COMING SOON...", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -530,7 +545,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                     @Override
                     public void onClick(View v) {
                         // Booking start button
-                        if(headerHeight == 0){
+                        if (headerHeight == 0) {
                             headerHeight = headerLayout.getMeasuredHeight();
                         }
 
@@ -559,27 +574,6 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                         tempAllServices.clear();
                                     }
                                 }
-                            }
-                        });
-                        anim.addListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animation) {
-
-                            }
-
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-
-                            }
-
-                            @Override
-                            public void onAnimationCancel(Animator animation) {
-
-                            }
-
-                            @Override
-                            public void onAnimationRepeat(Animator animation) {
-
                             }
                         });
                         anim.start();
@@ -640,7 +634,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                         int month = mCalendar.get(Calendar.MONTH);
                         int year = mCalendar.get(Calendar.YEAR);
 
-                        if(currentDate != null){
+                        if (currentDate != null) {
                             String[] dateSplit = currentDate.split("-");
                             day = Integer.parseInt(dateSplit[0]);
                             month = Integer.parseInt(dateSplit[1]) - 1;
@@ -670,7 +664,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                         int minute = mCalendar.get(Calendar.MINUTE);
 
                         // If no time selected previously then set selected time in dialog to current time
-                        if(selectedBookingStartTime != null){
+                        if (selectedBookingStartTime != null) {
                             String[] timeSplit = selectedBookingStartTime.split(":");
                             hour = Integer.parseInt(timeSplit[0]);
                             minute = Integer.parseInt(timeSplit[1]);
@@ -700,7 +694,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 headerLayout.setLayoutParams(layoutParams);
 
                                 // Clear selected services
-                                if(tempAllServices == null){
+                                if (tempAllServices == null) {
                                     tempAllServices = new ArrayList<>();
                                 } else {
                                     tempAllServices.clear();
@@ -777,7 +771,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 }
                             }
                         } else if (timeSelectionLayout.getVisibility() == View.VISIBLE) {
-                            if(selectedBookingStartTime == null){
+                            if (selectedBookingStartTime == null) {
                                 Toast.makeText(getApplicationContext(), "Time not specified...", Toast.LENGTH_SHORT).show();
                             } else {
                                 timeSelectionLayout.setVisibility(View.GONE);
@@ -787,10 +781,10 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 ArrayList<Barber> filteredBarbersList = new ArrayList<>();
                                 filteredBarbersList.add(new Barber("none", "none", "none", "none", new HashMap<String, HashMap<String, Object>>(), new ArrayList<HashMap<String, String>>()));
 
-                                for(Barber barber : allBarbers){
+                                for (Barber barber : allBarbers) {
                                     ArrayList<HashMap<String, String>> barberAvailableTimeSlots = barberAvailableSlots(barber, bookedTimeSlots, selectedBookingDate);
-                                    for(HashMap<String, String> slot : barberAvailableTimeSlots){
-                                        if((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)){
+                                    for (HashMap<String, String> slot : barberAvailableTimeSlots) {
+                                        if ((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)) {
                                             filteredBarbersList.add(barber);
                                             break;
                                         }
@@ -820,7 +814,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 for (DataSnapshot details : dataSnapshot.getChildren()) {
                                     if (details.getKey().equals("barbers")) { // Salon barbers
                                         for (DataSnapshot barber : details.getChildren()) {
-                                            if(barber.getKey().equals("barberID")){ // Skip for placeholder barberID
+                                            if (barber.getKey().equals("barberID")) { // Skip for placeholder barberID
                                                 continue;
                                             }
 
@@ -829,16 +823,18 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                             ArrayList<HashMap<String, String>> barberBookings = new ArrayList<>();
 
                                             for (DataSnapshot barberDetails : barber.getChildren()) {
-                                                if (barberDetails.getKey().equals("workingHours")) { // Barber Working Hours for all days of a week
-                                                    for(DataSnapshot day : barberDetails.getChildren()){
+                                                // Barber Working Hours for all days of a week
+                                                if (barberDetails.getKey().equals("workingHours")) {
+                                                    for (DataSnapshot day : barberDetails.getChildren()) {
                                                         HashMap<String, Object> dayDetailsMap = new HashMap<>();
 
-                                                        for(DataSnapshot dayDetails : day.getChildren()){
-                                                            if(dayDetails.getKey().equals("unavailableSlots")){ // Breaks on a certain day
+                                                        for (DataSnapshot dayDetails : day.getChildren()) {
+                                                            // Breaks on a certain day
+                                                            if (dayDetails.getKey().equals("unavailableSlots")) {
                                                                 ArrayList<HashMap<String, String>> unavailableSlots = new ArrayList<>();
-                                                                for(DataSnapshot slot : dayDetails.getChildren()){
+                                                                for (DataSnapshot slot : dayDetails.getChildren()) {
                                                                     HashMap<String, String> slotTimings = new HashMap<>();
-                                                                    for(DataSnapshot timing : slot.getChildren()){
+                                                                    for (DataSnapshot timing : slot.getChildren()) {
                                                                         slotTimings.put(timing.getKey(), timing.getValue().toString());
                                                                     }
                                                                     unavailableSlots.add(slotTimings);
@@ -852,8 +848,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                                         workingHours.put(day.getKey(), dayDetailsMap);
                                                     }
-                                                } else if(barberDetails.getKey().equals("bookedTimeSlots")){ // Barber booked time slots
-                                                    for(DataSnapshot booking : barberDetails.getChildren()){
+                                                } else if (barberDetails.getKey().equals("bookedTimeSlots")) { // Barber booked time slots
+                                                    for (DataSnapshot booking : barberDetails.getChildren()) {
                                                         HashMap<String, String> bookingTimings = new HashMap<>();
                                                         bookingTimings.put("id", booking.getKey());
                                                         for (DataSnapshot time : booking.getChildren()) {
@@ -908,20 +904,20 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 }
 
                                 final ArrayList<HashMap<String, String>> tempAllActualBookedTimeSlots = new ArrayList<>();
-                                for(HashMap<String, String> booking : tempSalonAllBookedSlots){
+                                for (HashMap<String, String> booking : tempSalonAllBookedSlots) {
                                     String barberID = booking.get("barberID");
                                     String bookingID = booking.get("id");
-                                    for(Barber barber : tempBarbers){
-                                        if(barber.getBarberDetails().get("id").toString().equals(barberID)){
+                                    for (Barber barber : tempBarbers) {
+                                        if (barber.getBarberDetails().get("id").toString().equals(barberID)) {
                                             ArrayList<HashMap<String, String>> barberBookings = (ArrayList<HashMap<String, String>>) barber.getBarberDetails().get("bookings");
-                                            for(HashMap<String, String> barberBooking : barberBookings){
-                                                if(barberBooking.get("id").equals(bookingID)){
+                                            for (HashMap<String, String> barberBooking : barberBookings) {
+                                                if (barberBooking.get("id").equals(bookingID)) {
                                                     boolean areOtherBarbersFree = true;
-                                                    for(Barber otherBarbers : allBarbers){
-                                                        if(!otherBarbers.getBarberDetails().get("id").toString().equals(barberID)){
+                                                    for (Barber otherBarbers : allBarbers) {
+                                                        if (!otherBarbers.getBarberDetails().get("id").toString().equals(barberID)) {
                                                             ArrayList<HashMap<String, String>> bookings = (ArrayList<HashMap<String, String>>) otherBarbers.getBarberDetails().get("bookings");
-                                                            for(HashMap<String, String> otherBarberBooking : bookings){
-                                                                if((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)){
+                                                            for (HashMap<String, String> otherBarberBooking : bookings) {
+                                                                if ((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)) {
                                                                     areOtherBarbersFree = false;
                                                                     break;
                                                                 } else {
@@ -932,7 +928,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                                     }
 
-                                                    if(!areOtherBarbersFree){
+                                                    if (!areOtherBarbersFree) {
                                                         tempAllActualBookedTimeSlots.add(barberBooking);
                                                     }
                                                 }
@@ -944,19 +940,19 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                 ArrayList<HashMap<String, String>> allCurrentUpdatedSlots = getValidBookingSlots(availableTimeSlot(tempAllActualBookedTimeSlots, tempSalonWorkingHoursAndDays, selectedBookingDate), selectionTimeInMins);
                                 boolean isTimeSelectionValid = false;
 
-                                for(HashMap<String, String> slot : allCurrentUpdatedSlots){
-                                    if((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)){
+                                for (HashMap<String, String> slot : allCurrentUpdatedSlots) {
+                                    if ((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)) {
                                         isTimeSelectionValid = true;
                                     }
                                 }
 
-                                if(isTimeSelectionValid){
+                                if (isTimeSelectionValid) {
                                     Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
                                     final long pushKey = calendar.getTimeInMillis();
                                     firebaseDatabase.child("Salons").child(salonIDStr).child("bookedTimeSlots").child(String.valueOf(pushKey)).child("barberID").setValue(selectedBarber.getBarberDetails().get("id").toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
-                                            if(task.isSuccessful()){
+                                            if (task.isSuccessful()) {
                                                 final HashMap<String, Object> bookingDetails = new HashMap<>();
                                                 bookingDetails.put("date", selectedBookingDate);
                                                 bookingDetails.put("endTime", selectedBookingEndTime);
@@ -967,10 +963,10 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                                 firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                        for(DataSnapshot customerDetails : dataSnapshot.getChildren()){
-                                                            if(customerDetails.getKey().equals("name")){
+                                                        for (DataSnapshot customerDetails : dataSnapshot.getChildren()) {
+                                                            if (customerDetails.getKey().equals("name")) {
                                                                 bookingDetails.put("customerName", customerDetails.getValue().toString());
-                                                            } else if(customerDetails.getKey().equals("phoneNum")){
+                                                            } else if (customerDetails.getKey().equals("phoneNum")) {
                                                                 bookingDetails.put("customerPhoneNum", customerDetails.getValue().toString());
                                                             }
                                                         }
@@ -978,7 +974,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                                         HashMap<String, HashMap<String, String>> bookingServices = new HashMap<>();
 
-                                                        for(Service service : allSelectedServices){
+                                                        for (Service service : allSelectedServices) {
                                                             HashMap<String, Object> serviceDetails = service.getServiceDetails();
                                                             HashMap<String, String> usefulDetailsMap = new HashMap<>();
 
@@ -994,7 +990,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                                         firebaseDatabase.child("Salons").child(salonIDStr).child("barbers").child(selectedBarber.getBarberDetails().get("id").toString()).child("bookedTimeSlots").child(String.valueOf(pushKey)).setValue(bookingDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
-                                                                if(task.isSuccessful()){
+                                                                if (task.isSuccessful()) {
                                                                     HashMap<String, Object> customerBookingMap = new HashMap<>();
                                                                     customerBookingMap.put("amount", String.valueOf(totalCostVal));
                                                                     customerBookingMap.put("barberID", selectedBarber.getBarberDetails().get("id").toString());
@@ -1006,7 +1002,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                                                     HashMap<String, HashMap<String, String>> bookingServices = new HashMap<>();
 
-                                                                    for(Service service : allSelectedServices){
+                                                                    for (Service service : allSelectedServices) {
                                                                         HashMap<String, Object> serviceDetails = service.getServiceDetails();
                                                                         HashMap<String, String> usefulDetailsMap = new HashMap<>();
 
@@ -1022,7 +1018,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                                                     firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("currentBooking").child(String.valueOf(pushKey)).setValue(customerBookingMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                         @Override
                                                                         public void onComplete(@NonNull Task<Void> task) {
-                                                                            if(task.isSuccessful()){
+                                                                            if (task.isSuccessful()) {
                                                                                 bookingCompletionLoader.hideDialog();
 
                                                                                 ValueAnimator anim = ValueAnimator.ofInt(0, headerHeight);
@@ -1035,7 +1031,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                                                                         headerLayout.setLayoutParams(layoutParams);
 
                                                                                         // Clear selected services
-                                                                                        if(tempAllServices == null){
+                                                                                        if (tempAllServices == null) {
                                                                                             tempAllServices = new ArrayList<>();
                                                                                         } else {
                                                                                             tempAllServices.clear();
@@ -1153,7 +1149,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                                             headerLayout.setLayoutParams(layoutParams);
 
                                             // Clear selected services
-                                            if(tempAllServices == null){
+                                            if (tempAllServices == null) {
                                                 tempAllServices = new ArrayList<>();
                                             } else {
                                                 tempAllServices.clear();
@@ -1268,22 +1264,22 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
             rawAvailableTimeSlots.clear();
 
-            if(allBookedTimeSlots == null){
+            if (allBookedTimeSlots == null) {
                 allBookedTimeSlots = new ArrayList<>();
-                for(HashMap<String, String> booking : bookedTimeSlots){
+                for (HashMap<String, String> booking : bookedTimeSlots) {
                     String barberID = booking.get("barberID");
                     String bookingID = booking.get("id");
-                    for(Barber barber : allBarbers){
-                        if(barber.getBarberDetails().get("id").toString().equals(barberID)){
+                    for (Barber barber : allBarbers) {
+                        if (barber.getBarberDetails().get("id").toString().equals(barberID)) {
                             ArrayList<HashMap<String, String>> barberBookings = (ArrayList<HashMap<String, String>>) barber.getBarberDetails().get("bookings");
-                            for(HashMap<String, String> barberBooking : barberBookings){
-                                if(barberBooking.get("id").equals(bookingID)){
+                            for (HashMap<String, String> barberBooking : barberBookings) {
+                                if (barberBooking.get("id").equals(bookingID)) {
                                     boolean areOtherBarbersFree = true;
-                                    for(Barber otherBarbers : allBarbers){
-                                        if(!otherBarbers.getBarberDetails().get("id").toString().equals(barberID)){
+                                    for (Barber otherBarbers : allBarbers) {
+                                        if (!otherBarbers.getBarberDetails().get("id").toString().equals(barberID)) {
                                             ArrayList<HashMap<String, String>> bookings = (ArrayList<HashMap<String, String>>) otherBarbers.getBarberDetails().get("bookings");
-                                            for(HashMap<String, String> otherBarberBooking : bookings){
-                                                if((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)){
+                                            for (HashMap<String, String> otherBarberBooking : bookings) {
+                                                if ((compareTimeStrings(barberBooking.get("startTime"), otherBarberBooking.get("startTime")) != 1) && (compareTimeStrings(barberBooking.get("endTime"), otherBarberBooking.get("endTime")) != -1)) {
                                                     areOtherBarbersFree = false;
                                                     break;
                                                 } else {
@@ -1294,7 +1290,9 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                                     }
 
-                                    if(!areOtherBarbersFree || (allBarbers.size() == 1)){
+
+                                    // A time slot is considered unavailable when all barbers are unavaialble at that time
+                                    if (!areOtherBarbersFree || (allBarbers.size() == 1)) {
                                         allBookedTimeSlots.add(barberBooking);
                                     }
                                 }
@@ -1307,7 +1305,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
             rawAvailableTimeSlots.addAll(getValidBookingSlots(availableTimeSlot(allBookedTimeSlots, salonWorkingHoursAndDays, selectedBookingDate), selectionTimeInMins));
             availableTimeSlotsListAdapter.refreshDataset(rawAvailableTimeSlots);
 
-            if(rawAvailableTimeSlots.size() == 0){
+            // If no avaialble time slot
+            if (rawAvailableTimeSlots.size() == 0) {
                 selectedDate.setText("Select Date");
                 timePicker.setVisibility(View.GONE);
 
@@ -1344,13 +1343,13 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
             boolean isTimeSelectionValid = false;
 
-            for(HashMap<String, String> slot : rawAvailableTimeSlots){
-                if((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)){
+            for (HashMap<String, String> slot : rawAvailableTimeSlots) {
+                if ((compareTimeStrings(selectedBookingStartTime, slot.get("startTime")) != -1) && (compareTimeStrings(selectedBookingEndTime, slot.get("endTime")) != 1)) {
                     isTimeSelectionValid = true;
                 }
             }
 
-            if(!isTimeSelectionValid){
+            if (!isTimeSelectionValid) {
                 Toast.makeText(getApplicationContext(), "Invalid Time!", Toast.LENGTH_SHORT).show();
                 selectedBookingStartTime = null;
             } else {
@@ -1359,13 +1358,14 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     };
 
+    // Listener for dateAndTime from webserver
     Emitter.Listener getTrueDateTime = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(args != null){
+                    if (args != null) {
                         String[] fullTimeStampSplit = (args[0].toString()).split(" ");
 
                         String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -1383,34 +1383,40 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     };
 
-    private int getIndexOf(String[] array, String str){
-        for(int i = 0; i < array.length; i++){
-            if(array[i].equalsIgnoreCase(str)){
+    private int getIndexOf(String[] array, String str) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equalsIgnoreCase(str)) {
                 return i;
             }
         }
         return -1;
     }
 
+    // Get all available time slots based on current bookedTimeSlots and breaks for the selected date
     private ArrayList<HashMap<String, String>> availableTimeSlot(ArrayList<HashMap<String, String>> bookedTimeSlots, HashMap<String, Object> salonMap, String forDate) {
         ArrayList<HashMap<String, String>> availableTimeSlots = new ArrayList<>();
 
         Calendar calendar = Calendar.getInstance();
-        if(currentDate != null){
+        if (currentDate != null) {
+            // Update calendar object with current date
             String[] currentDateSplit = currentDate.split("-");
             calendar.set(Integer.parseInt(currentDateSplit[2]), Integer.parseInt(currentDateSplit[1]) - 1, Integer.parseInt(currentDateSplit[0]));
         }
         String dayDate = (calendar.get(Calendar.DAY_OF_MONTH)) < 10 ? "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) : String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         String month = (calendar.get(Calendar.MONTH) + 1) < 10 ? "0" + String.valueOf(calendar.get(Calendar.MONTH) + 1) : String.valueOf(calendar.get(Calendar.MONTH) + 1);
-        if(currentTime == null){
+
+        if (currentTime == null) {
+            // Else update calendar object with device time
             currentTime = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
         }
 
-        if(currentDate == null){
+        if (currentDate == null) {
+            // Else update calendar object with device date
             currentDate = dayDate + "-" + month + "-" + calendar.get(Calendar.YEAR);
         }
 
-        if(compareDateStrings(forDate, currentDate) == -1){
+        // If selected date is before current date then no slots shown
+        if (compareDateStrings(forDate, currentDate) == -1) {
             return availableTimeSlots;
         }
 
@@ -1425,10 +1431,14 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
             e.printStackTrace();
         }
 
+        // All workdays
+        // 0 index based starting with Sunday
         int[] workingDays = getWorkingDays(salonMap.get("workingDays").toString());
-        if (workingDays[dayOfWeek] == 1) {
+
+        if (workingDays[dayOfWeek] == 1) { // If selected day is a workday
             ArrayList<HashMap<String, Object>> daysWorkingHours = (ArrayList<HashMap<String, Object>>) salonMap.get("daysWorkingHours");
             for (HashMap<String, Object> day : daysWorkingHours) {
+                // Selected Workday
                 if (Integer.parseInt((day.get("id")).toString()) == dayOfWeek) {
                     String openingTime = day.get("openingTime").toString();
                     String closingTime = day.get("closingTime").toString();
@@ -1438,7 +1448,9 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
 
                     ArrayList<HashMap<String, String>> filteredBookedTimeSlot = new ArrayList<>();
 
-                    if(forDate.equals(currentDate)){
+                    // Start time for current date starts from current time
+                    // Start time for future date stars from opening time
+                    if (forDate.equals(currentDate)) {
                         startTimePointer = currentTime;
                     } else {
                         startTimePointer = openingTime;
@@ -1453,7 +1465,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
                     allUnavailableTimeSlots.addAll(breaks);
                     allUnavailableTimeSlots.addAll(filteredBookedTimeSlot);
 
-                    sortTimeStamps(allUnavailableTimeSlots);
+                    sortTimeStamps(allUnavailableTimeSlots); // Sort based on time
 
                     for (HashMap<String, String> timeSlot : allUnavailableTimeSlots) {
                         if (compareTimeStrings(startTimePointer, timeSlot.get("startTime")) == -1) {
@@ -1481,7 +1493,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return availableTimeSlots;
     }
 
-    private ArrayList<HashMap<String, String>> barberAvailableSlots(Barber barber, ArrayList<HashMap<String, String>> bookedTimeSlots, String forDate){
+    private ArrayList<HashMap<String, String>> barberAvailableSlots(Barber barber, ArrayList<HashMap<String, String>> bookedTimeSlots, String forDate) {
         ArrayList<HashMap<String, String>> allBarbersAvailableSlots = new ArrayList<>();
 
         int dayOfWeek = 0;
@@ -1498,13 +1510,13 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         HashMap<String, HashMap<String, Object>> workingHours = (HashMap<String, HashMap<String, Object>>) barber.getBarberDetails().get("workingHours");
         HashMap<String, Object> selectedDayWorkingHours = workingHours.get(String.valueOf(dayOfWeek));
         ArrayList<HashMap<String, String>> breaks = (ArrayList<HashMap<String, String>>) selectedDayWorkingHours.get("breaks");
-
-
         ArrayList<HashMap<String, String>> bookings = (ArrayList<HashMap<String, String>>) barber.getBarberDetails().get("bookings");
+
         ArrayList<HashMap<String, String>> slotsBookedForDate = new ArrayList<>();
 
-        for(HashMap<String, String> slot : bookings){
-            if(slot.get("date").equals(forDate)){
+        // Booked slots for selected dates
+        for (HashMap<String, String> slot : bookings) {
+            if (slot.get("date").equals(forDate)) {
                 slotsBookedForDate.add(slot);
             }
         }
@@ -1542,6 +1554,8 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return allBarbersAvailableSlots;
     }
 
+    // Parse workdays from String
+    // E.g {0, 1, 1, 1, 1, 1, 0} parsed from "1, 2, 3, 4, 5"
     private int[] getWorkingDays(String workingDays) {
         int[] workingDaysParsed = new int[7];
 
@@ -1555,6 +1569,10 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
     }
 
     private int compareTimeStrings(String timeString1, String timeString2) {
+        // Returns 1 if timeString1 comes after timeString2
+        // Returns 0 if timeString1 is equals to timeString2
+        // Returns -1 if timeString1 comes before timeString2
+
         String[] timeString1Split = timeString1.split(":");
         String[] timeString2Split = timeString2.split(":");
 
@@ -1573,13 +1591,17 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     }
 
-    private int compareDateStrings(String dateString1, String dateString2){
+    // Better implementation of above function
+    private int compareDateStrings(String dateString1, String dateString2) {
         // DD-MM-YYYY
+        // Returns 1 is dateString1 is after dateString2
+        // Returns 0 is dateString1 is equals to dateString2
+        // Returns 1 is dateString1 is before dateString2
         String[] dateString1Split = dateString1.split("-");
         String[] dateString2Split = dateString2.split("-");
 
-        for(int i = dateString1Split.length - 1; i >= 0 ; i--){
-            if(Integer.parseInt(dateString1Split[i]) > Integer.parseInt(dateString2Split[i])){
+        for (int i = dateString1Split.length - 1; i >= 0; i--) {
+            if (Integer.parseInt(dateString1Split[i]) > Integer.parseInt(dateString2Split[i])) {
                 return 1;
             }
         }
@@ -1587,27 +1609,27 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return dateString1.equals(dateString2) ? 0 : -1;
     }
 
-    private String fixTimeStamp(String timeStamp){
+    private String fixTimeStamp(String timeStamp) {
         // Converts the timestamp from 24-hour format to 12-hour format
 
         String[] timeStampSplit = timeStamp.split(":");
         String hours = timeStampSplit[0];
         String suffix;
 
-        if(Integer.parseInt(hours) > 12){ // If 13 hours or above in 24 hours
+        if (Integer.parseInt(hours) > 12) { // If 13 hours or above in 24 hours
             timeStampSplit[0] = String.valueOf(Integer.parseInt(hours) % 12);
         }
 
         // At and after 12 in 24-hour clock, PM starts
-        if(Integer.parseInt(hours) >= 12){
+        if (Integer.parseInt(hours) >= 12) {
             suffix = " PM";
         } else {
             suffix = " AM";
         }
 
         // Add 0 to single digits
-        for(int i = 0; i < timeStampSplit.length; i++){
-            if(timeStampSplit[i].length() == 1){
+        for (int i = 0; i < timeStampSplit.length; i++) {
+            if (timeStampSplit[i].length() == 1) {
                 timeStampSplit[i] = "0" + timeStampSplit[i];
             }
         }
@@ -1615,6 +1637,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return timeStampSplit[0] + ":" + timeStampSplit[1] + suffix;
     }
 
+    // Get all slots which have a total time of atleast greater or equal to the selected services total expected time
     private ArrayList<HashMap<String, String>> getValidBookingSlots(ArrayList<HashMap<String, String>> bookingSlots, int selectionTimeInMins) {
         ArrayList<HashMap<String, String>> filteredAvailableBookingSlots = new ArrayList<>();
 
@@ -1627,6 +1650,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return filteredAvailableBookingSlots;
     }
 
+    // Time difference between 2 time strings
     private int timeDifference(String timeString1, String timeString2) {
         String[] timeString1Split = timeString1.split(":");
         String[] timeString2Split = timeString2.split(":");
@@ -1637,6 +1661,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return ((hour * 60) + mins);
     }
 
+    // Sort based on time
     private void sortTimeStamps(ArrayList<HashMap<String, String>> timeStamps) {
         for (int i = 1; i < timeStamps.size(); i++) {
             HashMap<String, String> key = timeStamps.get(i);
@@ -1648,6 +1673,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     }
 
+    // XHYM to ZM
     private int getTotalMinsFromTimeStamp(String rawTimeString) {
         // Format 0H45M
         int hourCharInd = rawTimeString.indexOf('H');
@@ -1661,6 +1687,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return minutes;
     }
 
+    // ZM to XHYM
     private String getTimeStringFromMins(int selectedServicesTimeInMins) {
         int hours = selectedServicesTimeInMins / 60;
         int mins = selectedServicesTimeInMins % 60;
@@ -1672,6 +1699,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         }
     }
 
+    // Get date separated info
     private HashMap<String, String> parseDate(String dateString) {
         HashMap<String, String> parsedDate = new HashMap<>();
 
@@ -1687,7 +1715,9 @@ public class SalonBookingDetailsActivity extends AppCompatActivity{
         return parsedDate;
     }
 
-    private Notification getNotification(String salonName, String startTime){
+    // Not used currently
+    // For handling notifications
+    private Notification getNotification(String salonName, String startTime) {
         Notification.Builder notifBuilder = new Notification.Builder(this);
         notifBuilder.setContentTitle("Booking In 1 Hour");
         notifBuilder.setContentText("You have a booking for " + salonName + " at " + fixTimeStamp(startTime));

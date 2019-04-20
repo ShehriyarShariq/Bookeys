@@ -28,6 +28,7 @@ public class Appointment implements Parcelable {
         this.contactNum = contactNum;
     }
 
+    // For parcelable class constructor
     protected Appointment(Parcel in) {
         bookingID = in.readString();
         amount = in.readString();

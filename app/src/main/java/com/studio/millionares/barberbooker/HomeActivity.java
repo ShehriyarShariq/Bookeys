@@ -72,7 +72,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private final int LOCATION_REQUEST = 101;
     private final int MAX_SPREAD_IN_METERS = 10000;
@@ -230,10 +230,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 switch (menuItem.getItemId()) {
                     case R.id.my_appointments:
                         mainDrawerLayout.closeDrawer(GravityCompat.START);
-                        startActivity(new Intent(MainActivity.this, MyAppointmentsActivity.class));
+                        startActivity(new Intent(HomeActivity.this, MyAppointmentsActivity.class));
                         break;
                     case R.id.feedback:
-                        startActivity(new Intent(MainActivity.this, FeedbackActivity.class));
+                        startActivity(new Intent(HomeActivity.this, FeedbackActivity.class));
                         break;
                     case R.id.log_out:
                         mainDrawerLayout.closeDrawer(GravityCompat.START);
@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         editor.commit();
 
                         firebaseAuth.signOut();
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        startActivity(new Intent(HomeActivity.this, LoginActivity.class));
                         break;
                 }
 
@@ -779,7 +779,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (permissionsRejected.size() > 0) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
-                        new AlertDialog.Builder(MainActivity.this).
+                        new AlertDialog.Builder(HomeActivity.this).
                                 setMessage("These permissions are mandatory to get your location. You need to allow them.").
                                 setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                     @Override

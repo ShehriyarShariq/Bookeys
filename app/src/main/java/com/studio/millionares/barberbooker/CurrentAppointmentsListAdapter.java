@@ -12,6 +12,10 @@ import java.util.HashMap;
 
 public class CurrentAppointmentsListAdapter extends RecyclerView.Adapter<CurrentAppointmentsListAdapter.CurrentAppointmentsListViewHolder> {
 
+    /*
+        RECYCLER VIEW ADAPTER FOR CurrentAppointmentsFragment
+    */
+
     private String type;
     private ArrayList<Appointment> allAppointments;
     private AppointmentsRecyclerViewListClickListener appointmentsRecyclerViewListClickListener;
@@ -61,6 +65,7 @@ public class CurrentAppointmentsListAdapter extends RecyclerView.Adapter<Current
             bookingTimeAndDate = itemView.findViewById(R.id.date_and_time);
             bookingAmount = itemView.findViewById(R.id.price_txt);
 
+            // Get index of appointment clicked in the allAppointments list
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

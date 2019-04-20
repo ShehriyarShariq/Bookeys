@@ -6,6 +6,10 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 public class LoginPagerAdapter extends FragmentStatePagerAdapter {
 
+    /*
+        VIEWPAGER ADAPTER FOR LoginActivity
+    */
+
     private int noOfTabs;
 
     public LoginPagerAdapter(FragmentManager fm, int noOfTabs) {

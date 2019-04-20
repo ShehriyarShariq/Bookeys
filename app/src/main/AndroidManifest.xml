@@ -19,7 +19,7 @@
             android:value="AIzaSyBReC5PawEPtnoxF5rVBfcuotDUVi77spc" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".HomeActivity"
             android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity
             android:name=".LoginActivity"

@@ -7,9 +7,13 @@ import android.widget.TextView;
 
 public class LoaderDialog {
 
+    /*
+        MULTI-PURPOSE MESSAGE DIALOG BOX
+    */
+
     Activity activity;
     Dialog dialog;
-    String type;
+    String type; // Dialog type
 
     public LoaderDialog(Activity activity, String type){
         this.activity = activity;
@@ -24,13 +28,13 @@ public class LoaderDialog {
 
         TextView label = dialog.findViewById(R.id.label);
         switch (type){
-            case "InfoLoader":
+            case "InfoLoader": // Data Loader Dialog
                 label.setText("Loading...");
                 break;
-            case "Process":
+            case "Process": // Data Processing Dialog
                 label.setText("Processing...");
                 break;
-            case "Send":
+            case "Send": // Data Sending Dialog
                 label.setText("Sending...");
                 break;
         }

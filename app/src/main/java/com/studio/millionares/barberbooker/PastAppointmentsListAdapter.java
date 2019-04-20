@@ -12,6 +12,10 @@ import java.util.HashMap;
 
 public class PastAppointmentsListAdapter extends RecyclerView.Adapter<PastAppointmentsListAdapter.CurrentAndPastAppointmentsListViewHolder> {
 
+    /*
+        RECYCLER VIEW ADAPTER FOR PastAppointmentsFragment
+    */
+
     private String type;
     private ArrayList<Appointment> allAppointments;
 
