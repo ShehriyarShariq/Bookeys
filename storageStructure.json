@@ -1,0 +1,20 @@
+{
+	"Customers" : {
+		"customerID" : {
+			"profileImg" : "profileImgUrl"
+		}
+	},
+	"SalonOwners" : {
+		"ownerID" : {
+			"profileImg" : "profileImgUrl"
+		}
+	},
+	"Salons" : {
+		"salonID" : {
+			"profileImg" : "profileImgUrl",
+			"displayImages" : {
+				"imgID" : "imgUrl"			
+			}
+		}
+	}
+}

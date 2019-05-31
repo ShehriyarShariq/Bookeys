@@ -3,14 +3,18 @@ package com.studio.millionares.barberbooker;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -41,6 +45,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -50,6 +56,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SalonBookingDetailsActivity extends AppCompatActivity {
 
@@ -59,21 +67,26 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private TabLayout tabLayout;
-    private ViewPager viewPager;
+    private ViewPager imagesPager, viewPager;
     private CardView makeBookingBtn, cancelBtn, nextBtn, finishBookingBtn, datePickerBtn, timePickerBtn;
     private RelativeLayout headerLayout, originalLayout, bookingLayout, servicesSelectionLayout, datePicker, timePicker, getDirectionsBtnLayout;
     private ScrollView timeSelectionLayout, barberSelectionLayout, finalReceiptLayout;
     private TextView salonName, salonPlaceHolderName, salonRating, bookingDate, bookingTime, expectedTime, netTotal, serviceTax, totalCost, selectedDate, selectedTime, selectedBarberTxt;
     private RecyclerView bookingServicesList, availableTimeSlotsList, selectedServicesList, barberSelectionList;
-    private ImageView backToServicesSelectionBtn, backToTimeSelectionBtn, backToBarberSelectionBtn;
+    private ImageView backToServicesSelectionBtn, backToTimeSelectionBtn, backToBarberSelectionBtn, toolbarBackBtn;
     private LinearLayout cancelAndNextBtnLayout;
     private ImageButton addToFavouritesBtn, removeFromFavouritesBtn;
+
+    private SalonDisplayImagesPagerAdapter salonDisplayImagesPagerAdapter;
+    private ArrayList<String> allDisplayImages;
+    int currentPage = 0;
 
     private String salonIDStr, salonNameStr, salonRatingStr;
     private LatLng salonLocation;
 
     private DatabaseReference firebaseDatabase;
     private FirebaseAuth firebaseAuth;
+    private FirebaseStorage firebaseStorage;
 
     private HashMap<String, Object> salonWorkingHoursAndDays;
     private ArrayList<HashMap<String, String>> bookedTimeSlots;
@@ -156,10 +169,14 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
         // Firebase database and auth instances
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
 
         /* UI Views */
         toolbar = findViewById(R.id.toolbar);
         headerLayout = findViewById(R.id.header_layout);
+        imagesPager = findViewById(R.id.images_pager);
+        toolbarBackBtn = findViewById(R.id.toolbar_back_btn);
+
         // Services, Reviews, Profile viewpager screen
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.fragments_holder);
@@ -202,9 +219,6 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
 
         // Set toolbar
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         salonName.setText(salonNameStr);
         salonPlaceHolderName.setText(salonNameStr);
@@ -216,6 +230,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
         closedDays = new ArrayList<>();
         allBarbers = new ArrayList<>();
         allReviews = new ArrayList<>();
+        allDisplayImages = new ArrayList<>();
 
         allSelectedServices = new ArrayList<>();
         tempAllVisibleServices = new ArrayList<>();
@@ -229,7 +244,7 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot details : dataSnapshot.getChildren()) {
-                    if (details.getKey().equals("description")) {
+                    if (details.getKey().equals("salonDescription")) {
                         salonDescription = details.getValue().toString();
                     } else if (details.getKey().equals("reviews")) {
                         for (DataSnapshot review : details.getChildren()) {
@@ -361,8 +376,32 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
                             daysWorkingHours.add(dayDetails);
                         }
                         salonWorkingHoursAndDays.put("daysWorkingHours", daysWorkingHours);
+                    } else if (details.getKey().equals("images")){
+                        for(DataSnapshot img : details.getChildren()){
+                            allDisplayImages.add(img.getValue().toString());
+                        }
                     }
                 }
+
+                salonDisplayImagesPagerAdapter = new SalonDisplayImagesPagerAdapter(SalonBookingDetailsActivity.this, salonIDStr, allDisplayImages);
+                imagesPager.setAdapter(salonDisplayImagesPagerAdapter);
+
+                final Handler handler = new Handler();
+                final Runnable Update = new Runnable() {
+                    public void run() {
+                        if (currentPage == allDisplayImages.size()) {
+                            currentPage = 0;
+                        }
+                        imagesPager.setCurrentItem(currentPage++, true);
+                    }
+                };
+                final Timer swipeTimer = new Timer();
+                swipeTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        handler.post(Update);
+                    }
+                }, 3000, 3000);
 
                 tempAllVisibleServices.addAll(allServices);
 
@@ -504,6 +543,14 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
                 selectedServicesList.setHasFixedSize(true);
                 LinearLayoutManager selectedServicesListLinearLayoutManager = new LinearLayoutManager(getApplicationContext());
                 selectedServicesList.setLayoutManager(selectedServicesListLinearLayoutManager);
+
+                toolbarBackBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onBackPressed();
+                        finish();
+                    }
+                });
 
                 getDirectionsBtnLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -1051,6 +1098,24 @@ public class SalonBookingDetailsActivity extends AppCompatActivity {
                                                                                     public void onAnimationEnd(Animator animation) {
                                                                                         BookingFinishedDialogFragment bookingFinishedDialogFragment = new BookingFinishedDialogFragment(SalonBookingDetailsActivity.this, salonBasicDetails);
                                                                                         bookingFinishedDialogFragment.show(getSupportFragmentManager(), "bookingFinishedDialog");
+
+                                                                                        Notifications notif = new Notifications(SalonBookingDetailsActivity.this, CONSTANTS.BOOKING_CREATION_CHANNEL, "Booking Creation", "Booking successfully made...");
+
+                                                                                        String[] dateStrArr = selectedBookingDate.split("-"); // Format: dd-MM-yyyy
+                                                                                        String[] timeStrArr = selectedBookingStartTime.split(" ")[0].split(":");
+
+                                                                                        Calendar alarmCalendar = Calendar.getInstance();
+                                                                                        alarmCalendar.set(Integer.parseInt(dateStrArr[2]), Integer.parseInt(dateStrArr[1]) - 1, Integer.parseInt(dateStrArr[0]), Integer.parseInt(timeStrArr[0]), Integer.parseInt(timeStrArr[1]));
+                                                                                        alarmCalendar.add(Calendar.HOUR_OF_DAY, -1);
+
+                                                                                        Intent notifAlarmIntent = new Intent(SalonBookingDetailsActivity.this, NotifReminder_Receiver.class);
+                                                                                        notifAlarmIntent.putExtra("title", "Booking Reminder");
+                                                                                        notifAlarmIntent.putExtra("content", "You have a booking due in an hour");
+
+                                                                                        PendingIntent notifAlarmPendingIntent = PendingIntent.getBroadcast(SalonBookingDetailsActivity.this, 100, notifAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                                                                        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                                                                                        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmCalendar.getTimeInMillis(), notifAlarmPendingIntent);
 
                                                                                         bookingLayout.setVisibility(View.GONE);
                                                                                         originalLayout.setVisibility(View.VISIBLE);

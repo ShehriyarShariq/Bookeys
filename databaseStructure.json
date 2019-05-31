@@ -1,0 +1,179 @@
+{
+	"Customers" : {
+		"customerID" : {
+			"bookingsHistory" : {
+				"bookingID" : {
+					"amount" : "amount",
+					"barberID" : "barberID",
+					"dateAndTime" : "dateAndTime",
+					"rating" : "rating",
+					"review" : "review",
+					"salonID" : "salonID",
+					"servicesAvailed" : {
+						"00" : {
+							"cost" : "cost",
+							"expectedTime" : "expectedTime",
+							"name" : "serviceName"
+						}
+					},
+					"status" : "cancelledOrCompleted"
+				}
+			},
+			"currentBooking" : {
+				"bookingID" : {
+					"amount" : "amount",
+					"barberID" : "barberID",
+					"barberName" : "barberName",
+					"dateAndTime" : "dateAndTime",
+					"salonID" : "salonID",
+					"salonName" : "salonName",
+					"servicesAvailed" : {
+						"00" : {
+							"cost" : "cost",
+							"expectedTime" : "expectedTime",
+							"name" : "serviceName"
+						}
+					},
+					"status" : "cancelledInProgressOrCompleted"
+				}
+			},
+			"email" : "email",
+			"name" : "name",
+			"phoneNum" : "phoneNum",
+			"profileImgUrl" : "profileImgUrl",
+			"verified" : {
+				"email" : false,
+				"phoneNum" : false
+			},
+			"walletAmount" : "amount"
+		}
+	},
+	"Feedback" : {
+		"feedbackID" : {
+			"content" : "content",
+			"customerID" : "customerID",
+			"title" : "title"
+		}
+	},
+	"SalonOwners" : {
+		"ownerID" : {
+			"cnicNum" : "cnicNum",
+			"email" : "email",
+			"profileImgUrl" : "profileImgUrl",
+			"name" : "name",
+			"phoneNum" : "phoneNum",
+			"salons" : {
+				"salonID" : {
+					"name" : "salonName"
+				}
+			},
+			"verified" : {
+				"email" : "false",
+				"phoneNum" : "true"
+			}
+		},
+	},
+	"Salons" : {
+		"salonID" : {
+			"address" : {
+				"city" : "city",
+				"simpleAddress" : "simpleAddress"
+			},
+			"allServices" : {
+				"serviceID" : {
+					"byBarbers" : {
+						"barberID" : "barberID"
+					},
+					"cost" : "cost",
+					"expectedTime" : "expectedTime",
+					"name" : "serviceName"
+				}
+			},
+			"barbers" : {
+				"barberID" : {
+					"address" : "address",
+					"bookedTimeSlots" : {
+						"bookingID" : {
+							"amount" : "amount",
+							"customerID" : "customerID",
+							"customerName" : "customerName",
+							"customerPhoneNum" : "customerPhoneNum",
+							"date" : "date",
+							"endTime" : "endTime",
+							"servicesAvailed" : {
+								"serviceID" : {
+									"cost" : "cost",
+									"expectedTime" : "expectedTime",
+									"name" : "serviceName"
+								}	
+							},
+							"startTime" : "startTime"
+						}
+					},
+					"city" : "city",
+					"cnicNum" : "cnicNum",
+					"email" : "email",
+					"name" : "barberName",
+					"password" : "qwerty786",
+					"phoneNum" : "phoneNum",
+					"rating" : "none",
+					"workingHours" : [ 
+						"dayID" : {
+							"endTime" : "endTime",
+							"startTime" : "startTime",
+							"unavailableSlots" : [ {
+									"endTime" : "endTime",
+									"startTime" : "startTime"
+							} ]
+						}
+					]
+				}
+			},
+			"bookedTimeSlots" : {
+				"bookingID" : {
+					"barberID" : "barberID"
+				}
+			},
+			"bookingsHistory" : {
+				"bookingID" : {
+					"customerID" : "customerID",
+					"date" : "date"
+				}
+			},
+			"closedDays" : {
+				"date" : "date"
+			},
+			"contactNum" : "contactNum",
+			"profileImgUrl" : "profileImgUrl",
+			"location" : {
+				"latitude" : 0,
+				"longitude" : 0
+			},
+			"name" : "salonName",
+			"rating" : "none",
+			"reviews" : {
+				"reviewID" : {
+					"date" : "date",
+					"message" : "message",
+					"name" : "name",
+					"rating" : "rating"
+				}
+			},
+			"salonDescription" : "none",
+			"wallet" : "walletAmount",
+			"workingDays" : "workingDays",
+			"workingHours" : [ 
+				"dayID" : {
+					"breaks" : [ 
+						"breakID" : {
+							"endTime" : "endTime",
+							"startTime" : "startTime"
+						} 
+					],
+					"closingTime" : "23:00",
+					"openingTime" : "09:00"
+				} 
+			]
+		}
+	}
+}

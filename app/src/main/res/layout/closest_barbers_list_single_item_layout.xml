@@ -15,14 +15,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <de.hdodenhof.circleimageview.CircleImageView
+            <ImageView
                 android:id="@+id/salon_image"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_centerHorizontal="true"
                 android:layout_margin="3dp"
                 android:src="@drawable/ic_username"
-                app:civ_circle_background_color="#000" />
+                android:background="#000"/>
 
             <RelativeLayout
                 android:id="@+id/rating"
