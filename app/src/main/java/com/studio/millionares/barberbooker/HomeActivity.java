@@ -51,6 +51,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -84,7 +85,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     Toolbar toolbar;
     NavigationView navigationView;
     EditText searchBar;
-    CardView dateTimeSelector, searchItemsContainer, currentLocationBtn;
+    CardView dateTimeSelector, searchItemsContainer, currentLocationBtn, searchingIndicator;
     //TextView selectedTime;
     RecyclerView nearbySalonsList, searchItemsList;
     ImageButton menuBtn, clearSearchTxtBtn, searchBtn;
@@ -153,6 +154,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         searchBtn = findViewById(R.id.search_btn);
         navigationView = findViewById(R.id.navigation_drawer);
         currentLocationBtn = findViewById(R.id.current_location_btn);
+        searchingIndicator = findViewById(R.id.searching_indicator);
 
         allSalonMarkers = new ArrayList<>();
 
@@ -214,6 +216,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        MapsInitializer.initialize(getApplicationContext());
 
         requestLocationPermission();
 
@@ -520,7 +523,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (allSalons.size() == 0) {
                     for (DataSnapshot salon : dataSnapshot.getChildren()) {
 
-                        String id = "", name = "", city = "", rating = "", address = "";
+                        String id = "", name = "", city = "", rating = "", address = "", profileImage = "";
                         double lat = 0, lon = 0;
 
                         id = salon.getKey();
@@ -545,6 +548,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 }
                             } else if (details.getKey().equals("rating")) {
                                 rating = details.getValue().toString();
+                            } else if (details.getKey().equals("profileImgUrl")) {
+                                profileImage = details.getValue().toString();
                             }
                         }
 
@@ -554,10 +559,10 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Location.distanceBetween(customerCurrentLocation.getLatitude(), customerCurrentLocation.getLongitude(), location.latitude, location.longitude, results);
                         float distBtwPoints = results[0];
                         if (distBtwPoints <= MAX_SPREAD_IN_METERS) {
-                            allNearbySalons.add(new Salon(id, name, address, city, rating, "", location));
+                            allNearbySalons.add(new Salon(id, name, address, city, rating, profileImage, location));
                         }
 
-                        allSalons.add(new Salon(id, name, address, city, rating, "", location));
+                        allSalons.add(new Salon(id, name, address, city, rating, profileImage, location));
                     }
 
                     sortByDistance(allSalons);
@@ -571,6 +576,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                         allSalonMarkers.add(marker);
                     }
+
+                    searchingIndicator.setVisibility(View.GONE);
                 }
             }
 
