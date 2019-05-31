@@ -42,6 +42,18 @@ dependencies {
     implementation 'com.github.nkzawa:socket.io-client:0.3.0'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+
+    implementation 'com.github.yalantis:ucrop:2.2.3'
+
+    //Butterknife
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+    //dexter permissions
+    implementation "com.karumi:dexter:5.0.0"
+
+    // circular imageview
+    implementation 'com.mikhaellopez:circularimageview:3.2.0'
 }
 
 googleServices { disableVersionCheck = true }

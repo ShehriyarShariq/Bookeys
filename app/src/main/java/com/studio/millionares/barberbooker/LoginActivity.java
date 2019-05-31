@@ -1,13 +1,19 @@
 package com.studio.millionares.barberbooker;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -16,11 +22,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +42,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -446,6 +469,7 @@ public class LoginActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View v) {
                                 final View view = loginPager.getChildAt(position);
+                                final ImageView profileImg = view.findViewById(R.id.img_profile);
                                 final EditText username = view.findViewById(R.id.username_input);
                                 final EditText email = view.findViewById(R.id.email_input);
                                 final EditText password = view.findViewById(R.id.password_input);
@@ -508,22 +532,36 @@ public class LoginActivity extends AppCompatActivity {
                                                                         firebaseAuth.getCurrentUser().updateProfile(userProfileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                             @Override
                                                                             public void onComplete(@NonNull Task<Void> task) {
-                                                                                firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                Bitmap bitmap = ((BitmapDrawable) profileImg.getDrawable()).getBitmap();
+
+                                                                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+                                                                                byte[] imageByteData = byteArrayOutputStream.toByteArray();
+
+                                                                                StorageReference profileImgRef = FirebaseStorage.getInstance().getReference().child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("profileImg.jpg");
+
+                                                                                UploadTask uploadTask = profileImgRef.putBytes(imageByteData);
+                                                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                                                                     @Override
-                                                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                                                        progressDialog.dismiss();
-                                                                                        AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
-                                                                                        emailVerificationBuilder.setTitle("Verification Email Sent!");
-                                                                                        emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
-                                                                                        emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                                                        firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                                             @Override
-                                                                                            public void onClick(final DialogInterface dialog, int which) {
-                                                                                                firebaseAuth.signOut();
-                                                                                                dialog.dismiss();
+                                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                                progressDialog.dismiss();
+                                                                                                AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                                                                emailVerificationBuilder.setTitle("Verification Email Sent!");
+                                                                                                emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
+                                                                                                emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                                                                    @Override
+                                                                                                    public void onClick(final DialogInterface dialog, int which) {
+                                                                                                        firebaseAuth.signOut();
+                                                                                                        dialog.dismiss();
+                                                                                                    }
+                                                                                                });
+                                                                                                AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                                                                emailVerificationDialog.show();
                                                                                             }
                                                                                         });
-                                                                                        AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
-                                                                                        emailVerificationDialog.show();
                                                                                     }
                                                                                 });
                                                                             }
