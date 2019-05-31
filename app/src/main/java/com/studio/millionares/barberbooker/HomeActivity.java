@@ -11,7 +11,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,10 +40,17 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
@@ -67,11 +76,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -91,10 +104,16 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     ImageButton menuBtn, clearSearchTxtBtn, searchBtn;
     RelativeLayout searchItemsListLayout;
 
+    View navMenuHeaderView;
+    CircleImageView profileImage;
+    RelativeLayout imagesLayout;
+    ProgressBar profileImgLoader;
+
     ActionBarDrawerToggle drawerToggle;
 
     DatabaseReference firebaseDatabase;
     FirebaseAuth firebaseAuth;
+    FirebaseStorage firebaseStorage;
 
     Calendar mCalendar;
     Activity mActivity;
@@ -138,6 +157,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
@@ -226,6 +246,44 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(customerCurrentLocationBroadcastReceiver, new IntentFilter("locationInfo"));
 
         customerCurrentLocation = new Location("customerLoc");
+
+        navMenuHeaderView = navigationView.getHeaderView(0);
+        imagesLayout = navMenuHeaderView.findViewById(R.id.images_layout);
+        profileImage = navMenuHeaderView.findViewById(R.id.user_image);
+        profileImgLoader = navMenuHeaderView.findViewById(R.id.profile_image_loader);
+        TextView userNameView = navMenuHeaderView.findViewById(R.id.current_username);
+
+        userNameView.setText(firebaseAuth.getCurrentUser().getDisplayName());
+
+        firebaseDatabase.child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child("profileImgUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String fileName = dataSnapshot.getValue().toString();
+                StorageReference profileImageRef = firebaseStorage.getReference().child("Customers").child(firebaseAuth.getCurrentUser().getUid()).child(fileName);
+
+                Glide.with(HomeActivity.this)
+                        .load(profileImageRef)
+                        .addListener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                profileImgLoader.setVisibility(View.GONE);
+                                imagesLayout.setVisibility(View.VISIBLE);
+                                return false;
+                            }
+                        })
+                        .into(profileImage);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override

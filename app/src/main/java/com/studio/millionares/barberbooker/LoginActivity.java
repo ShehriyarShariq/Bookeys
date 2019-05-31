@@ -26,6 +26,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -500,24 +501,35 @@ public class LoginActivity extends AppCompatActivity {
 //                                                                        verificationActivity.putExtras(phoneNumberCarrier);
 //                                                                        startActivityForResult(verificationActivity, SIGNUP_VERIFICATION_REQ);
 
-                                                                        firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder()
+                                                                                .setDisplayName(username.getText().toString())
+                                                                                .build();
+
+                                                                        firebaseAuth.getCurrentUser().updateProfile(userProfileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                             @Override
                                                                             public void onComplete(@NonNull Task<Void> task) {
-                                                                                progressDialog.dismiss();
-                                                                                AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
-                                                                                emailVerificationBuilder.setTitle("Verification Email Sent!");
-                                                                                emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
-                                                                                emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                                                firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                                     @Override
-                                                                                    public void onClick(final DialogInterface dialog, int which) {
-                                                                                        firebaseAuth.signOut();
-                                                                                        dialog.dismiss();
+                                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                                        progressDialog.dismiss();
+                                                                                        AlertDialog.Builder emailVerificationBuilder = new AlertDialog.Builder(LoginActivity.this);
+                                                                                        emailVerificationBuilder.setTitle("Verification Email Sent!");
+                                                                                        emailVerificationBuilder.setMessage("Email Sent. Verify to login.");
+                                                                                        emailVerificationBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                                                                            @Override
+                                                                                            public void onClick(final DialogInterface dialog, int which) {
+                                                                                                firebaseAuth.signOut();
+                                                                                                dialog.dismiss();
+                                                                                            }
+                                                                                        });
+                                                                                        AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
+                                                                                        emailVerificationDialog.show();
                                                                                     }
                                                                                 });
-                                                                                AlertDialog emailVerificationDialog = emailVerificationBuilder.create();
-                                                                                emailVerificationDialog.show();
                                                                             }
                                                                         });
+
+
                                                                     } else {
                                                                         progressDialog.dismiss();
                                                                         Toast.makeText(getApplicationContext(), "Some error occurred! Try again!", Toast.LENGTH_SHORT).show();

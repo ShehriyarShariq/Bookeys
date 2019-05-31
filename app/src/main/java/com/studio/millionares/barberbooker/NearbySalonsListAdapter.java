@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -77,6 +78,8 @@ public class NearbySalonsListAdapter extends RecyclerView.Adapter<NearbySalonsLi
 
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            nearbySalonsListViewHolder.salonImgLoader.setVisibility(View.GONE);
+                            nearbySalonsListViewHolder.salonImg.setVisibility(View.VISIBLE);
                             nearbySalonsListViewHolder.salonImg.setBackgroundColor(Color.TRANSPARENT);
                             return false;
                         }
@@ -113,6 +116,7 @@ public class NearbySalonsListAdapter extends RecyclerView.Adapter<NearbySalonsLi
 
         CardView salonThumbnailLayout;
         ImageView salonImg;
+        ProgressBar salonImgLoader;
         TextView salonName, ratingTxt, salonAddress;
 
         public NearbySalonsListViewHolder(@NonNull View itemView) {
@@ -120,6 +124,7 @@ public class NearbySalonsListAdapter extends RecyclerView.Adapter<NearbySalonsLi
 
             salonThumbnailLayout = itemView.findViewById(R.id.salon_layout);
             salonImg = itemView.findViewById(R.id.salon_image);
+            salonImgLoader = itemView.findViewById(R.id.salon_image_loader);
             ratingTxt = itemView.findViewById(R.id.rating_txt);
             salonName = itemView.findViewById(R.id.salon_name);
             salonAddress = itemView.findViewById(R.id.address_txt);

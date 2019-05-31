@@ -45,9 +45,9 @@ public class FeedbackActivity extends AppCompatActivity {
 
         // Update toolbar
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Send feedback
         sendBtn.setOnClickListener(new View.OnClickListener() {
@@ -70,6 +70,13 @@ public class FeedbackActivity extends AppCompatActivity {
                 });
             }
         });
+
+    }
+    
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
 
     }
 }
